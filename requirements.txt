@@ -125,6 +125,8 @@ numpy==1.26.4
     #   scipy
 openai==1.57.0
     # via litellm
+orgecc-pylib==0.0.9
+    # via -r requirements/requirements.in
 packaging==24.2
     # via
     #   -r requirements/requirements.in
