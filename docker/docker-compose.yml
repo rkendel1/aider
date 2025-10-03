@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  # Code-server with Aider integration
+  code-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.vscode
+    ports:
+      - "8443:8443"  # code-server web interface
+      - "5000:5000"  # aider API server
+    environment:
+      - PASSWORD=${CODE_SERVER_PASSWORD:-aider}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - AIDER_MODEL=${AIDER_MODEL:-}
+      - SUPABASE_URL=http://supabase-kong:8000
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      # Aider cache settings
+      - AIDER_CACHE_DIR=/home/coder/.aider/cache
+      - AIDER_NO_CHECK_UPDATE=1
+    volumes:
+      - workspace:/workspace
+      - aider-cache:/home/coder/.aider
+      - code-server-config:/home/coder/.config
+    depends_on:
+      - supabase-db
+      - supabase-kong
+    networks:
+      - aider-network
+
+  # Supabase PostgreSQL Database
+  supabase-db:
+    image: supabase/postgres:15.1.0.117
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - supabase-db:/var/lib/postgresql/data
+    networks:
+      - aider-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Supabase Kong API Gateway
+  supabase-kong:
+    image: kong:2.8.1
+    environment:
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/var/lib/kong/kong.yml
+      - KONG_DNS_ORDER=LAST,A,CNAME
+      - KONG_PLUGINS=request-transformer,cors,key-auth,acl
+    ports:
+      - "8000:8000"  # Kong proxy
+      - "8443:8443"  # Kong proxy SSL
+    volumes:
+      - ./supabase/kong.yml:/var/lib/kong/kong.yml:ro
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    networks:
+      - aider-network
+
+  # Supabase Auth
+  supabase-auth:
+    image: supabase/gotrue:v2.99.0
+    environment:
+      - GOTRUE_API_HOST=0.0.0.0
+      - GOTRUE_API_PORT=9999
+      - API_EXTERNAL_URL=${API_EXTERNAL_URL:-http://localhost:8000}
+      - GOTRUE_DB_DRIVER=postgres
+      - GOTRUE_DB_DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@supabase-db:5432/postgres?search_path=auth
+      - GOTRUE_SITE_URL=${SITE_URL:-http://localhost:8443}
+      - GOTRUE_JWT_SECRET=${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      - GOTRUE_JWT_EXP=3600
+      - GOTRUE_DISABLE_SIGNUP=false
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    networks:
+      - aider-network
+
+  # Supabase REST API
+  supabase-rest:
+    image: postgrest/postgrest:v11.2.0
+    environment:
+      - PGRST_DB_URI=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@supabase-db:5432/postgres
+      - PGRST_DB_SCHEMAS=public,storage
+      - PGRST_DB_ANON_ROLE=anon
+      - PGRST_JWT_SECRET=${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      - PGRST_DB_USE_LEGACY_GUCS=false
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    networks:
+      - aider-network
+
+  # Supabase Realtime
+  supabase-realtime:
+    image: supabase/realtime:v2.10.1
+    environment:
+      - PORT=4000
+      - DB_HOST=supabase-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - DB_NAME=postgres
+      - DB_AFTER_CONNECT_QUERY=SET search_path TO _realtime
+      - DB_ENC_KEY=supabaserealtime
+      - API_JWT_SECRET=${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      - FLY_ALLOC_ID=fly123
+      - FLY_APP_NAME=realtime
+      - SECRET_KEY_BASE=UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+      - ERL_AFLAGS=-proto_dist inet_tcp
+      - ENABLE_TAILSCALE=false
+      - DNS_NODES=''
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    networks:
+      - aider-network
+
+  # Supabase Storage
+  supabase-storage:
+    image: supabase/storage-api:v0.40.4
+    environment:
+      - ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      - SERVICE_KEY=${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      - POSTGREST_URL=http://supabase-rest:3000
+      - PGRST_JWT_SECRET=${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@supabase-db:5432/postgres
+      - FILE_SIZE_LIMIT=52428800
+      - STORAGE_BACKEND=file
+      - FILE_STORAGE_BACKEND_PATH=/var/lib/storage
+      - TENANT_ID=stub
+      - REGION=stub
+      - GLOBAL_S3_BUCKET=stub
+    volumes:
+      - supabase-storage:/var/lib/storage
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    networks:
+      - aider-network
+
+volumes:
+  workspace:
+    driver: local
+  aider-cache:
+    driver: local
+  code-server-config:
+    driver: local
+  supabase-db:
+    driver: local
+  supabase-storage:
+    driver: local
+
+networks:
+  aider-network:
+    driver: bridge
