@@ -110,6 +110,12 @@ if grep -q "ENTRYPOINT.*dumb-init" Dockerfile.vscode; then
 else
     fail "Dockerfile missing dumb-init entrypoint"
 fi
+
+if grep -q "supabase" Dockerfile.vscode; then
+    pass "Dockerfile includes Supabase CLI installation"
+else
+    fail "Dockerfile missing Supabase CLI installation"
+fi
 echo ""
 
 # Test 7: Check environment variables in .env.example

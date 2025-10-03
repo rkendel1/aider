@@ -14,6 +14,7 @@ This directory contains a complete Docker-based development environment combinin
 - [Overview](OVERVIEW.md) - Architecture and summary
 - [Integration Examples](EXAMPLES.md) - Real-world usage examples
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
+- [Docker Optimizations](DOCKER_OPTIMIZATIONS.md) - Performance improvements and Supabase CLI
 
 🛠️ **Tools:**
 - [Makefile](Makefile) - Convenience commands
@@ -25,9 +26,11 @@ This directory contains a complete Docker-based development environment combinin
 ✅ **Browser-Based IDE**: Access VS Code from anywhere via http://localhost:8443
 ✅ **AI Pair Programming**: Aider integrated and ready at http://localhost:5000
 ✅ **Complete Backend**: PostgreSQL, Auth, REST API, Realtime, Storage
+✅ **Supabase CLI**: Pre-installed for database management and migrations
 ✅ **Persistent Data**: All data survives container restarts
 ✅ **Token Optimization**: Intelligent caching reduces AI API costs
-✅ **Production Ready**: Security tools and best practices included
+✅ **Optimized Performance**: Fast builds with reduced image sizes
+✅ **Production Ready**: Security tools, health checks, and best practices included
 
 ## Quick Start
 
