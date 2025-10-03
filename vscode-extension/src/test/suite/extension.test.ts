@@ -39,7 +39,9 @@ suite('Extension Test Suite', () => {
             'aider.removeFile',
             'aider.clearChat',
             'aider.undoChanges',
-            'aider.showDiff'
+            'aider.showDiff',
+            'aider.setPreviewUrl',
+            'aider.pasteToChat'
         ];
 
         for (const cmd of aiderCommands) {

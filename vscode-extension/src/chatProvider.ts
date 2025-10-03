@@ -90,6 +90,15 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
         }
     }
 
+    public pasteToInput(text: string) {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: 'pasteText',
+                text: text
+            });
+        }
+    }
+
     public async clearMessages() {
         this.messages = [];
         if (this._view) {
@@ -280,6 +289,10 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                             break;
                         case 'clearMessages':
                             messagesContainer.innerHTML = '';
+                            break;
+                        case 'pasteText':
+                            messageInput.value = message.text;
+                            messageInput.focus();
                             break;
                     }
                 });

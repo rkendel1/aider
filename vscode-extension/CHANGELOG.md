@@ -2,6 +2,23 @@
 
 All notable changes to the "aider-vscode" extension will be documented in this file.
 
+## [0.2.0] - 2024
+
+### Added
+- Live Preview feature with embedded webview for viewing applications
+- Component/CSS Inspector for identifying React components and styling
+- Click-to-inspect functionality in live preview
+- Automatic clipboard copy of component/CSS information
+- One-click paste of inspector data into chat
+- New commands: `Aider: Set Preview URL` and `Aider: Paste to Chat`
+- Configuration options for preview URL and inspector settings
+- Comprehensive documentation in LIVE_PREVIEW_GUIDE.md
+- Unit tests for preview provider functionality
+- Support for React component name detection
+- XPath generation for precise element location
+- Hover highlighting for inspected elements
+- Cross-origin error handling and user feedback
+
 ## [0.1.0] - 2024
 
 ### Added
