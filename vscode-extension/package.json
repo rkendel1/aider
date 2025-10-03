@@ -1,0 +1,145 @@
+{
+  "name": "aider-vscode",
+  "displayName": "Aider",
+  "description": "AI pair programming with Aider - seamless interaction and collaborative app building",
+  "version": "0.1.0",
+  "publisher": "aider",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "ai",
+    "assistant",
+    "pair programming",
+    "code generation",
+    "chat"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "browser": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aider.startChat",
+        "title": "Aider: Start Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "aider.sendMessage",
+        "title": "Aider: Send Message",
+        "icon": "$(send)"
+      },
+      {
+        "command": "aider.addFile",
+        "title": "Aider: Add File to Chat",
+        "icon": "$(add)"
+      },
+      {
+        "command": "aider.removeFile",
+        "title": "Aider: Remove File from Chat",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "aider.clearChat",
+        "title": "Aider: Clear Chat History",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "aider.undoChanges",
+        "title": "Aider: Undo Last Changes",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "aider.showDiff",
+        "title": "Aider: Show Diff",
+        "icon": "$(diff)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aider-sidebar",
+          "title": "Aider",
+          "icon": "$(comment-discussion)"
+        }
+      ]
+    },
+    "views": {
+      "aider-sidebar": [
+        {
+          "type": "webview",
+          "id": "aider.chatView",
+          "name": "Chat",
+          "icon": "$(comment-discussion)"
+        },
+        {
+          "id": "aider.filesView",
+          "name": "Files in Chat"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Aider",
+      "properties": {
+        "aider.apiEndpoint": {
+          "type": "string",
+          "default": "http://localhost:8501",
+          "description": "Aider backend API endpoint URL"
+        },
+        "aider.modelName": {
+          "type": "string",
+          "default": "",
+          "description": "AI model to use (e.g., claude-3-7-sonnet-20250219, gpt-4o)"
+        },
+        "aider.autoCommit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically commit changes made by Aider"
+        },
+        "aider.showDiffs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show diffs when changes are applied"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@types/mocha": "^10.0.6",
+    "@types/glob": "^8.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "@vscode/test-electron": "^2.3.x",
+    "eslint": "^8.x",
+    "typescript": "^5.3.x",
+    "@vscode/vsce": "^2.22.0",
+    "mocha": "^10.2.0",
+    "glob": "^10.3.10"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aider-AI/aider"
+  },
+  "license": "Apache-2.0"
+}
