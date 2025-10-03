@@ -1,10 +1,53 @@
+# Temporary files
 .BC.*
 tmp*
 *~
 OLD*
+
+# Python
 *.pyc
-.DS_Store
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
 .env
 .venv
+venv/
+ENV/
+
+# IDE and editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Aider specific
 .aider.*
-build
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Documentation (not needed in build)
+*.md
+docs/
+
+# Test files
+tests/
+test/
+*_test.py
+test_*.py
+
+# Docker
+.dockerignore
+docker-compose*.yml

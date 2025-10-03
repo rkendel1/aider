@@ -399,6 +399,127 @@ docker exec -it docker-code-server-1 du -sh /home/coder/.aider/cache
 
 2. **Limit cache size**: Currently not implemented, but you can periodically clean it
 
+## Build Issues
+
+### Docker build is slow
+
+**Symptoms**: Building the Docker image takes a very long time.
+
+**Solutions**:
+
+1. **Use Docker build cache**: The optimized Dockerfiles now combine RUN commands to reduce layers and improve cache utilization
+   ```bash
+   # Build with cache
+   docker compose build
+   
+   # If cache is corrupted, rebuild without cache
+   docker compose build --no-cache
+   ```
+
+2. **Parallel builds**: Use BuildKit for faster parallel builds
+   ```bash
+   # Enable BuildKit (add to .env or .bashrc)
+   export DOCKER_BUILDKIT=1
+   export COMPOSE_DOCKER_CLI_BUILD=1
+   
+   docker compose build
+   ```
+
+3. **Optimize context**: The `.dockerignore` file now excludes unnecessary files like tests, documentation, and git history
+
+### Out of disk space during build
+
+**Symptoms**: `no space left on device` error during build.
+
+**Diagnosis**:
+```bash
+# Check Docker disk usage
+docker system df
+
+# Check available disk space
+df -h
+```
+
+**Solutions**:
+
+1. **Clean up Docker resources**:
+   ```bash
+   # Remove unused images
+   docker image prune -a
+   
+   # Remove unused volumes
+   docker volume prune
+   
+   # Remove build cache
+   docker builder prune
+   
+   # Full cleanup (WARNING: removes all unused resources)
+   docker system prune -a --volumes
+   ```
+
+2. **Increase Docker storage**: Docker Desktop → Settings → Resources → Disk image size
+
+## Supabase CLI Issues
+
+### Supabase CLI not found
+
+**Symptoms**: `supabase: command not found` when running Supabase CLI commands.
+
+**Diagnosis**:
+```bash
+# Check if CLI is installed
+docker exec -it docker-code-server-1 which supabase
+
+# Check PATH
+docker exec -it docker-code-server-1 echo $PATH
+```
+
+**Solutions**:
+
+1. **Rebuild the container**: The CLI should be installed automatically
+   ```bash
+   docker compose up -d --build code-server
+   ```
+
+2. **Manual installation** (if needed):
+   ```bash
+   docker exec -it docker-code-server-1 /bin/bash
+   
+   # Inside container
+   ARCH=$(uname -m)
+   if [ "$ARCH" = "x86_64" ]; then
+       SUPABASE_ARCH="linux-amd64"
+   else
+       SUPABASE_ARCH="linux-arm64"
+   fi
+   wget -qO supabase.tar.gz "https://github.com/supabase/cli/releases/latest/download/supabase_${SUPABASE_ARCH}.tar.gz"
+   tar -xzf supabase.tar.gz -C /usr/local/bin
+   rm supabase.tar.gz
+   ```
+
+3. **Verify installation**:
+   ```bash
+   docker exec -it docker-code-server-1 supabase --version
+   ```
+
+### Supabase CLI connection errors
+
+**Symptoms**: CLI commands fail to connect to the database.
+
+**Solutions**:
+
+1. **Check database is running**:
+   ```bash
+   docker compose ps supabase-db
+   ```
+
+2. **Use correct connection string**: The CLI should connect to `localhost:5432` from within the container, or use the service name `supabase-db` within the Docker network
+
+3. **Check authentication**: Use the correct password from `.env`:
+   ```bash
+   docker exec -it docker-code-server-1 env | grep POSTGRES_PASSWORD
+   ```
+
 ## General Debugging Tips
 
 ### View all logs

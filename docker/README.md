@@ -205,6 +205,49 @@ All Supabase services are configured through environment variables in `.env`:
 - `SUPABASE_ANON_KEY`: Anonymous access key
 - `SUPABASE_SERVICE_KEY`: Service role key (admin access)
 
+### Using Supabase CLI
+
+The code-server container includes the Supabase CLI for database management and migrations:
+
+1. **Access the container**:
+   ```bash
+   docker exec -it docker-code-server-1 /bin/bash
+   ```
+
+2. **Check Supabase CLI version**:
+   ```bash
+   supabase --version
+   ```
+
+3. **Initialize a Supabase project** (within the container):
+   ```bash
+   cd /workspace
+   supabase init
+   ```
+
+4. **Create a migration**:
+   ```bash
+   supabase migration new create_users_table
+   ```
+
+5. **Link to your Supabase instance**:
+   ```bash
+   # Using the local Docker Supabase
+   supabase link --project-ref local --password ${POSTGRES_PASSWORD}
+   ```
+
+6. **Apply migrations**:
+   ```bash
+   supabase db push
+   ```
+
+7. **Generate TypeScript types from your schema**:
+   ```bash
+   supabase gen types typescript --local > types/database.types.ts
+   ```
+
+**Note**: The Supabase CLI is pre-installed in the code-server container and can be used to manage your database schema, run migrations, and generate types for your application.
+
 ## Advanced Usage
 
 ### Custom Project Mount
