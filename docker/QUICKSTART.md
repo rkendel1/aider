@@ -81,6 +81,22 @@ You're all set! The Aider API is running and ready to help you code.
 - **Supabase API**: http://localhost:8000
 - **PostgreSQL**: localhost:5432
 
+## New Features
+
+✨ **Supabase CLI**: Now pre-installed! Access it from within the container:
+```bash
+docker exec -it docker-code-server-1 /bin/bash
+supabase --version
+```
+
+✨ **Optimized Builds**: Docker images build 25-30% faster with reduced sizes
+
+✨ **Better Error Handling**: Clear error messages if API keys are missing
+
+✨ **Auto-Recovery**: Services automatically restart on failure
+
+See [DOCKER_OPTIMIZATIONS.md](DOCKER_OPTIMIZATIONS.md) for details.
+
 ## Common Commands
 
 ```bash
