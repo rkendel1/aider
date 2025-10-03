@@ -21,3 +21,8 @@ tmp.benchmarks/
 vscode-extension/node_modules/
 vscode-extension/out/
 vscode-extension/*.vsix
+
+# Docker-related files
+docker/.env
+docker/.docker_bash_history
+*.log

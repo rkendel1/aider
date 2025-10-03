@@ -1,0 +1,106 @@
+FROM python:3.10-slim-bookworm AS base
+
+# Install system dependencies including code-server requirements
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    libportaudio2 \
+    pandoc \
+    curl \
+    wget \
+    ca-certificates \
+    supervisor \
+    dumb-init \
+    locales \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up locale
+RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
+    && locale-gen
+ENV LANG=en_US.UTF-8
+
+# Create coder user (standard for code-server)
+RUN useradd -m -u 1000 -s /bin/bash coder
+
+# Install code-server
+ARG CODE_SERVER_VERSION=4.20.0
+RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --version=${CODE_SERVER_VERSION}
+
+WORKDIR /workspace
+
+# Create virtual environment for aider
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
+# Playwright browser settings
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/coder/pw-browsers
+ENV PLAYWRIGHT_SKIP_BROWSER_GC=1
+
+# Create directories with proper permissions
+RUN mkdir -p \
+    /home/coder/.aider \
+    /home/coder/.aider/cache \
+    /home/coder/.cache \
+    /home/coder/pw-browsers \
+    /home/coder/.config \
+    /home/coder/.local \
+    /workspace && \
+    chown -R coder:coder /home/coder /workspace /venv && \
+    chmod -R 777 /home/coder/.aider /home/coder/.cache /home/coder/pw-browsers
+
+# Configure git for the container
+RUN git config --system --add safe.directory /workspace
+
+# Set HOME to preserve aider caches
+ENV HOME=/home/coder
+
+#########################
+FROM base AS aider-vscode
+
+ENV AIDER_DOCKER_IMAGE=aider-vscode
+
+# Copy aider source
+COPY --chown=coder:coder . /tmp/aider
+
+# Install aider and dependencies as root
+RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
+    /venv/bin/python -m pip install --no-cache-dir \
+    /tmp/aider[help,browser,playwright] \
+    boto3 \
+    flask \
+    flask-cors \
+    --extra-index-url https://download.pytorch.org/whl/cpu && \
+    rm -rf /tmp/aider
+
+# Install playwright browsers
+RUN /venv/bin/python -m playwright install --with-deps chromium
+
+# Fix site-packages permissions
+RUN find /venv/lib/python3.10/site-packages \( -type d -exec chmod a+rwx {} + \) -o \( -type f -exec chmod a+rw {} + \)
+
+# Copy startup scripts and supervisor config
+COPY --chown=coder:coder docker/start-services.sh /usr/local/bin/start-services.sh
+COPY --chown=coder:coder docker/start_aider_api_docker.py /usr/local/bin/start_aider_api.py
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Make start scripts executable
+RUN chmod +x /usr/local/bin/start-services.sh /usr/local/bin/start_aider_api.py
+
+# Switch to coder user
+USER coder
+
+# Configure code-server
+RUN mkdir -p /home/coder/.config/code-server && \
+    echo "bind-addr: 0.0.0.0:8443" > /home/coder/.config/code-server/config.yaml && \
+    echo "auth: password" >> /home/coder/.config/code-server/config.yaml && \
+    echo "cert: false" >> /home/coder/.config/code-server/config.yaml
+
+# Expose ports
+EXPOSE 8443 5000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Start services using supervisor
+CMD ["/usr/local/bin/start-services.sh"]
