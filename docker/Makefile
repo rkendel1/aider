@@ -65,5 +65,23 @@ env: ## Create .env file from template
 		echo ".env file created. Please edit it and add your API keys."; \
 	fi
 
+secrets: ## Generate secure secrets for production
+	./generate-secrets.sh
+
 status: ## Show status of supervisor services
 	docker exec -it docker-code-server-1 supervisorctl status
+
+test: ## Run validation tests
+	./test-setup.sh
+
+backup-workspace: ## Backup workspace volume to workspace-backup.tar.gz
+	docker run --rm -v docker_workspace:/data -v $(PWD):/backup ubuntu tar czf /backup/workspace-backup.tar.gz -C /data .
+	@echo "Workspace backed up to workspace-backup.tar.gz"
+
+restore-workspace: ## Restore workspace from workspace-backup.tar.gz
+	@if [ ! -f workspace-backup.tar.gz ]; then \
+		echo "Error: workspace-backup.tar.gz not found"; \
+		exit 1; \
+	fi
+	docker run --rm -v docker_workspace:/data -v $(PWD):/backup ubuntu tar xzf /backup/workspace-backup.tar.gz -C /data
+	@echo "Workspace restored from workspace-backup.tar.gz"
