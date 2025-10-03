@@ -60,6 +60,16 @@
         "command": "aider.showDiff",
         "title": "Aider: Show Diff",
         "icon": "$(diff)"
+      },
+      {
+        "command": "aider.setPreviewUrl",
+        "title": "Aider: Set Preview URL",
+        "icon": "$(link)"
+      },
+      {
+        "command": "aider.pasteToChat",
+        "title": "Aider: Paste to Chat",
+        "icon": "$(clippy)"
       }
     ],
     "viewsContainers": {
@@ -78,6 +88,12 @@
           "id": "aider.chatView",
           "name": "Chat",
           "icon": "$(comment-discussion)"
+        },
+        {
+          "type": "webview",
+          "id": "aider.previewView",
+          "name": "Live Preview",
+          "icon": "$(browser)"
         },
         {
           "id": "aider.filesView",
@@ -107,6 +123,16 @@
           "type": "boolean",
           "default": true,
           "description": "Show diffs when changes are applied"
+        },
+        "aider.previewUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "Default URL for live preview"
+        },
+        "aider.enableInspector": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable component/CSS inspector in live preview"
         }
       }
     }

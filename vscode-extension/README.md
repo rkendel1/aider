@@ -5,10 +5,12 @@ AI pair programming with Aider directly in VS Code. This extension enables seaml
 ## Features
 
 - **Real-time Chat**: Interact with Aider through a built-in chat interface
+- **Live Preview with Inspector**: View your application in VS Code and click elements to identify React components or CSS
 - **File Management**: Add/remove files from the chat context
 - **Live Changes**: Apply code changes directly to your project
 - **Diff Viewing**: See exactly what changes Aider makes
 - **Undo Support**: Easily revert changes with one click
+- **Clipboard Integration**: Copy component/CSS info and paste into chat for targeted updates
 - **Web Compatible**: Works in VS Code Web and Desktop versions
 
 ## Requirements
@@ -54,6 +56,18 @@ Aider will automatically apply changes to your files. You'll see:
 - A diff view (if enabled in settings)
 - An option to undo the changes
 
+### Using Live Preview with Inspector
+
+1. **Open the Live Preview panel** in the Aider sidebar
+2. **Enter your application URL** (e.g., `http://localhost:3000`)
+3. **Click "Load"** to display your application
+4. **Enable the Inspector** by clicking "Inspector Off" button (it will change to "Inspector On")
+5. **Click on any element** in the preview to inspect it
+6. **Inspector data is automatically copied** to clipboard
+7. **Click "Paste to Chat"** in the notification to insert component/CSS info into chat
+
+For detailed instructions, see [LIVE_PREVIEW_GUIDE.md](LIVE_PREVIEW_GUIDE.md).
+
 ### Undoing Changes
 
 Click "Undo" in the notification, or run "Aider: Undo Last Changes" from the command palette.
@@ -66,6 +80,8 @@ Access settings via File > Preferences > Settings, then search for "Aider":
 - `aider.modelName`: AI model to use (e.g., `claude-3-7-sonnet-20250219`, `gpt-4o`)
 - `aider.autoCommit`: Automatically commit changes (default: `true`)
 - `aider.showDiffs`: Show diffs when changes are applied (default: `true`)
+- `aider.previewUrl`: Default URL for live preview (default: `http://localhost:3000`)
+- `aider.enableInspector`: Enable component/CSS inspector in live preview (default: `true`)
 
 ## Commands
 
@@ -78,6 +94,8 @@ All commands are available through the Command Palette (Ctrl+Shift+P):
 - `Aider: Clear Chat History` - Clear all messages
 - `Aider: Undo Last Changes` - Revert last commit
 - `Aider: Show Diff` - Display changes since last message
+- `Aider: Set Preview URL` - Set the URL for live preview
+- `Aider: Paste to Chat` - Paste clipboard content into chat input
 
 ## Setting Up Aider Backend
 
