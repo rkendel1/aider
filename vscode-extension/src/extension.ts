@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { AiderChatProvider } from './chatProvider';
 import { AiderFilesProvider } from './filesProvider';
 import { AiderPreviewProvider, InspectorData } from './previewProvider';
+import { AiderPreviewPanel } from './previewPanel';
 import { AiderClient } from './aiderClient';
 import { GitHubClient } from './githubClient';
 import { ProviderManager, AIProvider } from './providerManager';
@@ -55,6 +56,15 @@ export function activate(context: vscode.ExtensionContext) {
         context.extensionUri,
         (data: InspectorData) => handleInspectorData(data)
     );
+
+    // Auto-open preview panel if enabled
+    const autoOpenPreview = config.get<boolean>('autoOpenPreview', true);
+    if (autoOpenPreview) {
+        // Open after a short delay to ensure workspace is ready
+        setTimeout(() => {
+            vscode.commands.executeCommand('aider.openPreviewPanel');
+        }, 1000);
+    }
 
     // Register webview provider for chat
     context.subscriptions.push(
@@ -320,6 +330,72 @@ export function activate(context: vscode.ExtensionContext) {
             }
         })
     );
+
+    // Full-page preview panel commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.openPreviewPanel', async () => {
+            const panel = AiderPreviewPanel.createOrShow(
+                context.extensionUri,
+                (data: InspectorData) => handleInspectorData(data),
+                (route: string) => handleRouteChange(route),
+                (filePath: string, line?: number) => handleOpenFile(filePath, line)
+            );
+            
+            // Set the preview URL from config
+            const previewUrl = config.get<string>('previewUrl', 'http://localhost:3000');
+            panel.setPreviewUrl(previewUrl);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.refreshPreview', () => {
+            if (AiderPreviewPanel.currentPanel) {
+                AiderPreviewPanel.currentPanel.refresh();
+            } else {
+                vscode.window.showWarningMessage('No preview panel is open');
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.highlightElement', async (xpath?: string) => {
+            if (!AiderPreviewPanel.currentPanel) {
+                vscode.window.showWarningMessage('No preview panel is open');
+                return;
+            }
+
+            if (!xpath) {
+                xpath = await vscode.window.showInputBox({
+                    prompt: 'Enter element XPath to highlight',
+                    placeHolder: '//*[@id="my-element"]'
+                });
+            }
+
+            if (xpath) {
+                AiderPreviewPanel.currentPanel.highlightElement(xpath);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.scrollToElement', async (xpath?: string) => {
+            if (!AiderPreviewPanel.currentPanel) {
+                vscode.window.showWarningMessage('No preview panel is open');
+                return;
+            }
+
+            if (!xpath) {
+                xpath = await vscode.window.showInputBox({
+                    prompt: 'Enter element XPath to scroll to',
+                    placeHolder: '//*[@id="my-element"]'
+                });
+            }
+
+            if (xpath) {
+                AiderPreviewPanel.currentPanel.scrollToElement(xpath);
+            }
+        })
+    );
 }
 
 function handleInspectorData(data: InspectorData) {
@@ -339,9 +415,64 @@ function handleInspectorData(data: InspectorData) {
     if (data.inlineStyles) {
         text += `Inline Styles: ${data.inlineStyles}\n`;
     }
+
+    if (data.filePath) {
+        text += `File: ${data.filePath}${data.line ? `:${data.line}` : ''}\n`;
+    }
     
     // Paste to chat input
     chatProvider.pasteToInput(text);
+}
+
+function handleRouteChange(route: string) {
+    // Show notification about route change
+    vscode.window.showInformationMessage(`Route changed to: ${route}`, 'Copy Route').then(action => {
+        if (action === 'Copy Route') {
+            vscode.env.clipboard.writeText(route);
+        }
+    });
+}
+
+async function handleOpenFile(filePath: string, line?: number) {
+    try {
+        // Try to open the file in VS Code
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            vscode.window.showWarningMessage('No workspace folder open');
+            return;
+        }
+
+        const fullPath = vscode.Uri.joinPath(workspaceFolders[0].uri, filePath);
+        const document = await vscode.workspace.openTextDocument(fullPath);
+        const editor = await vscode.window.showTextDocument(document, {
+            viewColumn: vscode.ViewColumn.Two,
+            preview: false
+        });
+
+        // Jump to line if specified
+        if (line !== undefined && line > 0) {
+            const position = new vscode.Position(line - 1, 0);
+            editor.selection = new vscode.Selection(position, position);
+            editor.revealRange(
+                new vscode.Range(position, position),
+                vscode.TextEditorRevealType.InCenter
+            );
+        }
+
+        // Optionally add file to Aider chat context
+        const addToChat = await vscode.window.showInformationMessage(
+            `Opened ${filePath}`,
+            'Add to Chat'
+        );
+
+        if (addToChat === 'Add to Chat') {
+            const relativePath = vscode.workspace.asRelativePath(fullPath);
+            await aiderClient.addFile(relativePath);
+            filesProvider.refresh();
+        }
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to open file: ${error}`);
+    }
 }
 
 async function checkGitHubCLI() {

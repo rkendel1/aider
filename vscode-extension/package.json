@@ -110,6 +110,26 @@
         "command": "aider.github.authenticate",
         "title": "Aider GitHub: Authenticate",
         "icon": "$(key)"
+      },
+      {
+        "command": "aider.openPreviewPanel",
+        "title": "Aider: Open App Preview",
+        "icon": "$(browser)"
+      },
+      {
+        "command": "aider.refreshPreview",
+        "title": "Aider: Refresh Preview",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "aider.highlightElement",
+        "title": "Aider: Highlight Element in Preview",
+        "icon": "$(search)"
+      },
+      {
+        "command": "aider.scrollToElement",
+        "title": "Aider: Scroll to Element in Preview",
+        "icon": "$(arrow-down)"
       }
     ],
     "viewsContainers": {
@@ -173,6 +193,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable component/CSS inspector in live preview"
+        },
+        "aider.autoOpenPreview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically open the app preview panel when VS Code starts"
         },
         "aider.github.checkOnStartup": {
           "type": "boolean",

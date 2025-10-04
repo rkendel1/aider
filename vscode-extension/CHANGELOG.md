@@ -2,6 +2,41 @@
 
 All notable changes to the "aider-vscode" extension will be documented in this file.
 
+## [0.3.0] - 2024
+
+### Added - Visual-First Workflow
+- **Full-Page Preview Panel**: New webview panel for main view experience
+  - Auto-opens on VS Code startup (configurable)
+  - Retains context when switching tabs
+  - Status bar showing route and inspector state
+  - Support for HMR and live reload
+- **Enhanced Inspector**: Advanced element detection and navigation
+  - React source file and line number detection
+  - "Open File" action to jump to component source
+  - Auto-add opened files to Aider chat context
+  - Route change monitoring and notifications
+- **Bidirectional Communication**: Full two-way messaging
+  - Preview → Aider: element clicks, route changes, file requests
+  - Aider → Preview: highlight elements, scroll, refresh
+  - Event-driven architecture for extensibility
+- **New Commands**:
+  - `Aider: Open App Preview` - Open full-page preview panel
+  - `Aider: Refresh Preview` - Reload preview on demand
+  - `Aider: Highlight Element in Preview` - Highlight by XPath
+  - `Aider: Scroll to Element in Preview` - Navigate to element
+- **Configuration**:
+  - `aider.autoOpenPreview` - Auto-open panel on startup
+- **Documentation**:
+  - [VISUAL_WORKFLOW_GUIDE.md](VISUAL_WORKFLOW_GUIDE.md) - Complete feature guide
+  - [QUICK_REFERENCE_VISUAL.md](QUICK_REFERENCE_VISUAL.md) - Quick start cheat sheet
+- **Testing**: Unit tests for preview panel functionality
+
+### Enhanced
+- InspectorData interface now includes `filePath` and `line` properties
+- Inspector notifications now offer "Open File" in addition to "Paste to Chat"
+- Preview URL auto-fills from configuration settings
+- Better error handling for cross-origin restrictions
+
 ## [0.2.0] - 2024
 
 ### Added
