@@ -70,6 +70,46 @@
         "command": "aider.pasteToChat",
         "title": "Aider: Paste to Chat",
         "icon": "$(clippy)"
+      },
+      {
+        "command": "aider.github.push",
+        "title": "Aider GitHub: Push Changes",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "aider.github.pull",
+        "title": "Aider GitHub: Pull Changes",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "aider.github.createBranch",
+        "title": "Aider GitHub: Create Branch",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "aider.github.createPR",
+        "title": "Aider GitHub: Create Pull Request",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "aider.github.clone",
+        "title": "Aider GitHub: Clone Repository",
+        "icon": "$(repo-clone)"
+      },
+      {
+        "command": "aider.github.fetchTemplate",
+        "title": "Aider GitHub: Fetch Template",
+        "icon": "$(file-symlink-directory)"
+      },
+      {
+        "command": "aider.github.naturalLanguage",
+        "title": "Aider GitHub: Natural Language Command",
+        "icon": "$(comment)"
+      },
+      {
+        "command": "aider.github.authenticate",
+        "title": "Aider GitHub: Authenticate",
+        "icon": "$(key)"
       }
     ],
     "viewsContainers": {
@@ -133,6 +173,16 @@
           "type": "boolean",
           "default": true,
           "description": "Enable component/CSS inspector in live preview"
+        },
+        "aider.github.checkOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check GitHub CLI availability on startup"
+        },
+        "aider.github.autoAuthenticate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically prompt for GitHub authentication if not logged in"
         }
       }
     }

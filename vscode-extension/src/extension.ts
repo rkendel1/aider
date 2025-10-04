@@ -3,11 +3,13 @@ import { AiderChatProvider } from './chatProvider';
 import { AiderFilesProvider } from './filesProvider';
 import { AiderPreviewProvider, InspectorData } from './previewProvider';
 import { AiderClient } from './aiderClient';
+import { GitHubClient } from './githubClient';
 
 let aiderClient: AiderClient;
 let chatProvider: AiderChatProvider;
 let filesProvider: AiderFilesProvider;
 let previewProvider: AiderPreviewProvider;
+let githubClient: GitHubClient;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Aider extension is now active!');
@@ -16,6 +18,12 @@ export function activate(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration('aider');
     const apiEndpoint = config.get<string>('apiEndpoint', 'http://localhost:8501');
     aiderClient = new AiderClient(apiEndpoint);
+
+    // Initialize GitHub client
+    githubClient = new GitHubClient();
+
+    // Check GitHub CLI availability
+    checkGitHubCLI();
 
     // Initialize providers
     chatProvider = new AiderChatProvider(context.extensionUri, aiderClient);
@@ -158,6 +166,137 @@ export function activate(context: vscode.ExtensionContext) {
             }
         })
     );
+
+    // GitHub CLI Integration Commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.push', async () => {
+            try {
+                await githubClient.push();
+            } catch (error) {
+                vscode.window.showErrorMessage(`Failed to push: ${error}`);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.pull', async () => {
+            try {
+                await githubClient.pull();
+            } catch (error) {
+                vscode.window.showErrorMessage(`Failed to pull: ${error}`);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.createBranch', async () => {
+            const branchName = await vscode.window.showInputBox({
+                prompt: 'Enter branch name',
+                placeHolder: 'feature/my-new-feature'
+            });
+            
+            if (branchName) {
+                try {
+                    await githubClient.createBranch(branchName);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to create branch: ${error}`);
+                }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.createPR', async () => {
+            const title = await vscode.window.showInputBox({
+                prompt: 'Enter pull request title',
+                placeHolder: 'Add new feature'
+            });
+            
+            if (title) {
+                const body = await vscode.window.showInputBox({
+                    prompt: 'Enter pull request description (optional)',
+                    placeHolder: 'Description of changes...'
+                });
+                
+                try {
+                    await githubClient.createPullRequest(title, body);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to create pull request: ${error}`);
+                }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.clone', async () => {
+            const url = await vscode.window.showInputBox({
+                prompt: 'Enter repository URL or owner/repo',
+                placeHolder: 'owner/repository or https://github.com/owner/repo'
+            });
+            
+            if (url) {
+                const directory = await vscode.window.showInputBox({
+                    prompt: 'Enter target directory (optional)',
+                    placeHolder: 'Leave empty for default'
+                });
+                
+                try {
+                    await githubClient.cloneRepository(url, directory || undefined);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to clone repository: ${error}`);
+                }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.fetchTemplate', async () => {
+            const templateRepo = await vscode.window.showInputBox({
+                prompt: 'Enter template repository',
+                placeHolder: 'owner/template-repo'
+            });
+            
+            if (templateRepo) {
+                const targetPath = await vscode.window.showInputBox({
+                    prompt: 'Enter target path (optional)',
+                    placeHolder: 'Leave empty for default'
+                });
+                
+                try {
+                    await githubClient.fetchTemplate(templateRepo, targetPath || undefined);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to fetch template: ${error}`);
+                }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.naturalLanguage', async () => {
+            const command = await vscode.window.showInputBox({
+                prompt: 'What would you like to do with GitHub?',
+                placeHolder: 'e.g., push changes, create a branch, create a pull request, clone a repo, fetch a template'
+            });
+            
+            if (command) {
+                try {
+                    await githubClient.processNaturalLanguageCommand(command);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to execute command: ${error}`);
+                }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.github.authenticate', async () => {
+            try {
+                await githubClient.authenticate();
+            } catch (error) {
+                vscode.window.showErrorMessage(`Failed to authenticate: ${error}`);
+            }
+        })
+    );
 }
 
 function handleInspectorData(data: InspectorData) {
@@ -182,6 +321,44 @@ function handleInspectorData(data: InspectorData) {
     chatProvider.pasteToInput(text);
 }
 
+async function checkGitHubCLI() {
+    const isInstalled = await githubClient.isGitHubCLIInstalled();
+    
+    if (!isInstalled) {
+        const response = await vscode.window.showWarningMessage(
+            'GitHub CLI (gh) is not installed. Some features will be unavailable.',
+            'Install Instructions',
+            'Dismiss'
+        );
+        
+        if (response === 'Install Instructions') {
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/cli/cli#installation'));
+        }
+        return;
+    }
+    
+    const isAuthenticated = await githubClient.isAuthenticated();
+    
+    if (!isAuthenticated) {
+        const response = await vscode.window.showInformationMessage(
+            'GitHub CLI is installed but not authenticated. Authenticate now?',
+            'Authenticate',
+            'Later'
+        );
+        
+        if (response === 'Authenticate') {
+            try {
+                await githubClient.authenticate();
+            } catch (error) {
+                vscode.window.showErrorMessage(`Authentication failed: ${error}`);
+            }
+        }
+    }
+}
+
 export function deactivate() {
     console.log('Aider extension is now deactivated');
+    if (githubClient) {
+        githubClient.dispose();
+    }
 }
