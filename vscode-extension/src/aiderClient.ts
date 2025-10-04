@@ -57,9 +57,16 @@ export class AiderClient {
             }
             
             return data;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error sending message to Aider:', error);
-            throw new Error(`Failed to send message: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            } else if (error.response?.status === 404) {
+                throw new Error('Aider API endpoint not found. Please check your backend configuration.');
+            } else if (error.response?.status >= 500) {
+                throw new Error(`Aider backend error: ${error.response?.data?.message || 'Internal server error'}`);
+            }
+            throw new Error(`Failed to send message: ${error.message || error}`);
         }
     }
 
@@ -71,9 +78,12 @@ export class AiderClient {
             await this.httpClient.post('/api/files/add', {
                 file: filePath
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding file to Aider:', error);
-            throw new Error(`Failed to add file: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            }
+            throw new Error(`Failed to add file: ${error.message || error}`);
         }
     }
 
@@ -85,9 +95,12 @@ export class AiderClient {
             await this.httpClient.post('/api/files/remove', {
                 file: filePath
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error removing file from Aider:', error);
-            throw new Error(`Failed to remove file: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            }
+            throw new Error(`Failed to remove file: ${error.message || error}`);
         }
     }
 
@@ -110,9 +123,12 @@ export class AiderClient {
     async clearChat(): Promise<void> {
         try {
             await this.httpClient.post('/api/chat/clear');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error clearing chat:', error);
-            throw new Error(`Failed to clear chat: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            }
+            throw new Error(`Failed to clear chat: ${error.message || error}`);
         }
     }
 
@@ -122,9 +138,12 @@ export class AiderClient {
     async undoLastCommit(): Promise<void> {
         try {
             await this.httpClient.post('/api/undo');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error undoing commit:', error);
-            throw new Error(`Failed to undo: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            }
+            throw new Error(`Failed to undo: ${error.message || error}`);
         }
     }
 
@@ -135,9 +154,12 @@ export class AiderClient {
         try {
             const response = await this.httpClient.get('/api/diff');
             return response.data.diff || '';
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error getting diff:', error);
-            throw new Error(`Failed to get diff: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            }
+            throw new Error(`Failed to get diff: ${error.message || error}`);
         }
     }
 
@@ -160,9 +182,12 @@ export class AiderClient {
     async applyChanges(edit: AiderEdit): Promise<void> {
         try {
             await this.httpClient.post('/api/apply', edit);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error applying changes:', error);
-            throw new Error(`Failed to apply changes: ${error}`);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+                throw new Error(`Cannot connect to Aider backend at ${this.baseUrl}. Please ensure the API server is running.`);
+            }
+            throw new Error(`Failed to apply changes: ${error.message || error}`);
         }
     }
 
