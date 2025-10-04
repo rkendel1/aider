@@ -124,6 +124,8 @@ See the [installation instructions](https://aider.chat/docs/install.html) and [u
 ## More Information
 
 ### Documentation
+
+**Official Docs:**
 - [Installation Guide](https://aider.chat/docs/install.html)
 - [Usage Guide](https://aider.chat/docs/usage.html)
 - [Tutorial Videos](https://aider.chat/docs/usage/tutorials.html)
@@ -131,6 +133,17 @@ See the [installation instructions](https://aider.chat/docs/install.html) and [u
 - [Configuration Options](https://aider.chat/docs/config.html)
 - [Troubleshooting](https://aider.chat/docs/troubleshooting.html)
 - [FAQ](https://aider.chat/docs/faq.html)
+
+**Repository Documentation:**
+- **[📚 Documentation Hub](docs/README.md)** - Complete repository documentation
+- **[VS Code Extension](docs/vscode-extension/README.md)** - Extension setup and usage
+  - [Quick Start](docs/vscode-extension/setup/quickstart.md) - Get started in 5 minutes
+  - [AI Providers](docs/vscode-extension/features/ai-providers.md) - Multi-AI support
+  - [Live Preview](docs/vscode-extension/features/live-preview.md) - Visual development
+  - [Vision Models](docs/vscode-extension/features/vision-models.md) - Screenshot-to-code
+- **[Docker Environment](docs/docker/README.md)** - Complete dev environment
+  - [Quick Start](docs/docker/quickstart.md) - 5-minute Docker setup
+- **[Contributing](CONTRIBUTING.md)** - Contribution guidelines
 
 ### Community & Resources
 - [LLM Leaderboards](https://aider.chat/docs/leaderboards/)
