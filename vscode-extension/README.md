@@ -4,12 +4,17 @@ AI pair programming with Aider directly in VS Code. This extension enables seaml
 
 ## Features
 
+- **Visual-First Workflow**: Full-page app preview as the primary view with Aider sidebar for quick access
 - **Real-time Chat**: Interact with Aider through a built-in chat interface
 - **Multi-AI Provider Support**: Choose between Default, Ollama, and GitHub Copilot
   - **Ollama**: Fast, local AI models for lightweight tasks
   - **GitHub Copilot**: Advanced AI for complex, context-heavy work
   - **Automatic Selection**: Let Aider choose the best provider based on task complexity
-- **Live Preview with Inspector**: View your application in VS Code and click elements to identify React components or CSS
+- **Live Preview with Inspector**: View your application in full-page panel and click elements to identify React components or CSS
+- **Bidirectional Communication**: Preview can trigger file opens, AI edits; Aider can highlight/scroll elements
+- **Auto-Open Preview**: Automatically opens the app preview when VS Code starts
+- **Route Change Detection**: Monitor navigation in your app and get notified of route changes
+- **Source Code Navigation**: Jump from preview elements directly to source files (when available)
 - **File Management**: Add/remove files from the chat context
 - **Live Changes**: Apply code changes directly to your project
 - **Diff Viewing**: See exactly what changes Aider makes
@@ -78,13 +83,29 @@ Aider will automatically apply changes to your files. You'll see:
 
 ### Using Live Preview with Inspector
 
-1. **Open the Live Preview panel** in the Aider sidebar
-2. **Enter your application URL** (e.g., `http://localhost:3000`)
-3. **Click "Load"** to display your application
+The extension provides two ways to preview your application:
+
+#### Full-Page Preview Panel (Recommended for Visual-First Workflow)
+
+1. **Open the preview panel** by running "Aider: Open App Preview" from the command palette (or it opens automatically on startup)
+2. **Enter your application URL** (e.g., `http://localhost:3000`) - auto-filled from settings
+3. **Click "Load"** to display your application in full-page view
 4. **Enable the Inspector** by clicking "Inspector Off" button (it will change to "Inspector On")
-5. **Click on any element** in the preview to inspect it
-6. **Inspector data is automatically copied** to clipboard
-7. **Click "Paste to Chat"** in the notification to insert component/CSS info into chat
+5. **Click on any element** to inspect it - data is automatically copied to clipboard
+6. **Choose action**: "Paste to Chat" to insert into Aider, or "Open File" to jump to source code
+7. **Use refresh button** to reload the preview or enable HMR for live updates
+8. Aider stays in the sidebar for quick access while you work with the preview
+
+#### Sidebar Preview (Compact View)
+
+1. **Open the Live Preview panel** in the Aider sidebar
+2. Follow steps 2-7 above
+
+**Advanced Features:**
+- **Route Detection**: Get notified when navigating in your app
+- **Element Highlighting**: Use "Aider: Highlight Element in Preview" to highlight specific elements
+- **Auto-Scroll**: Use "Aider: Scroll to Element in Preview" to navigate to elements
+- **Source Mapping**: When available, jump directly from preview to source files
 
 For detailed instructions, see [LIVE_PREVIEW_GUIDE.md](LIVE_PREVIEW_GUIDE.md).
 
@@ -103,6 +124,7 @@ Access settings via File > Preferences > Settings, then search for "Aider":
 - `aider.showDiffs`: Show diffs when changes are applied (default: `true`)
 - `aider.previewUrl`: Default URL for live preview (default: `http://localhost:3000`)
 - `aider.enableInspector`: Enable component/CSS inspector in live preview (default: `true`)
+- `aider.autoOpenPreview`: Automatically open app preview panel on startup (default: `true`)
 
 ### AI Provider Settings
 - `aider.aiProvider.default`: Default provider (`default`, `ollama`, `copilot`)
@@ -125,6 +147,10 @@ All commands are available through the Command Palette (Ctrl+Shift+P):
 - `Aider: Clear Chat History` - Clear all messages
 - `Aider: Undo Last Changes` - Revert last commit
 - `Aider: Show Diff` - Display changes since last message
+- `Aider: Open App Preview` - Open full-page app preview panel
+- `Aider: Refresh Preview` - Reload the preview panel
+- `Aider: Highlight Element in Preview` - Highlight a specific element by XPath
+- `Aider: Scroll to Element in Preview` - Scroll to and highlight an element
 - `Aider: Set Preview URL` - Set the URL for live preview
 - `Aider: Paste to Chat` - Paste clipboard content into chat input
 

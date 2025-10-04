@@ -376,6 +376,8 @@ export interface InspectorData {
     inlineStyles: string;
     xpath: string;
     componentName: string | null;
+    filePath?: string | null;
+    line?: number | null;
 }
 
 function getNonce() {
