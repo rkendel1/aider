@@ -40,26 +40,141 @@ AI pair programming with Aider directly in VS Code. This extension enables seaml
 
 ## Requirements
 
-- VS Code 1.85.0 or higher
-- Aider backend running (locally or remote)
-- Git repository for your project
+### Prerequisites
+
+1. **VS Code**: Version 1.85.0 or higher
+2. **Node.js**: Version 16.x or higher (for building the extension)
+3. **Git**: Required for version control and Aider operations
+4. **Aider Backend**: Running locally or accessible remotely (see setup below)
+5. **GitHub CLI (Optional)**: Required for GitHub integration features
+   - Install from: https://cli.github.com/
+   - Run `gh auth login` to authenticate
+
+### Aider Backend Setup
+
+The extension requires a running Aider backend API server. You have two options:
+
+#### Option 1: Using Aider CLI (Recommended)
+
+```bash
+# Install Aider
+pip install aider-chat
+
+# Navigate to your project directory
+cd /path/to/your/project
+
+# Start Aider with web interface
+aider --browser
+```
+
+This starts the backend on `http://localhost:8501` (default).
+
+#### Option 2: Custom Backend API
+
+If you're developing a custom backend, ensure it implements the following endpoints:
+- `POST /api/chat` - Send messages
+- `POST /api/files/add` - Add files to context
+- `POST /api/files/remove` - Remove files from context
+- `GET /api/files` - List files in context
+- `POST /api/chat/clear` - Clear chat history
+- `POST /api/undo` - Undo last commit
+- `GET /api/diff` - Get diff of changes
+- `GET /api/chat/history` - Get chat history
+- `POST /api/apply` - Apply changes
+- `GET /api/health` - Health check
+
+See [vscode-extension/examples/](examples/) for sample backend implementations.
+
+### GitHub CLI Setup (Optional)
+
+For GitHub integration features (push, pull, create PR, etc.):
+
+```bash
+# Install GitHub CLI
+# macOS
+brew install gh
+
+# Windows
+winget install --id GitHub.cli
+
+# Linux
+# See: https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+
+# Authenticate
+gh auth login
+```
+
+The extension will gracefully disable GitHub features if the CLI is not installed.
 
 ## Installation
 
-### From VSIX (Development)
+### Option 1: From VSIX Package (Recommended)
 
-1. Download the `.vsix` file
-2. In VS Code, go to Extensions view (Ctrl+Shift+X)
-3. Click the `...` menu and select "Install from VSIX..."
-4. Select the downloaded `.vsix` file
+1. **Build the extension** (if you haven't already):
+   ```bash
+   cd vscode-extension
+   npm install
+   npm run compile
+   npm run package
+   ```
+   This creates `aider-vscode-0.1.0.vsix`
 
-### From Source
+2. **Install in VS Code**:
+   - Open VS Code
+   - Go to Extensions view (Ctrl+Shift+X / Cmd+Shift+X)
+   - Click the `...` menu at the top
+   - Select "Install from VSIX..."
+   - Choose the `aider-vscode-0.1.0.vsix` file
 
-1. Clone the repository
-2. Navigate to `vscode-extension` directory
-3. Run `npm install`
-4. Run `npm run compile`
-5. Press F5 to launch extension in debug mode
+### Option 2: From Source (Development)
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Aider-AI/aider.git
+   cd aider/vscode-extension
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Compile TypeScript**:
+   ```bash
+   npm run compile
+   ```
+
+4. **Launch Extension Development Host**:
+   - Open the `vscode-extension` folder in VS Code
+   - Press `F5` to launch the Extension Development Host
+   - The extension will be active in the new window
+
+### Option 3: Continuous Development
+
+For active development with auto-compilation:
+
+```bash
+cd vscode-extension
+npm install
+npm run watch  # Watches for changes and recompiles automatically
+```
+
+Then press `F5` in VS Code to debug. The extension will reload automatically when you make changes.
+
+### Post-Installation
+
+1. **Configure the backend endpoint** (if not using default):
+   - Open VS Code Settings (Ctrl+, / Cmd+,)
+   - Search for "Aider"
+   - Set `aider.apiEndpoint` to your backend URL (default: `http://localhost:8501`)
+
+2. **Start the Aider backend**:
+   ```bash
+   cd /path/to/your/project
+   aider --browser
+   ```
+
+3. **Open a project** in VS Code and click the Aider icon in the Activity Bar to start!
 
 ## Usage
 
@@ -233,21 +348,48 @@ For detailed provider configuration, see [AI_PROVIDER_GUIDE.md](AI_PROVIDER_GUID
 
 ## Commands
 
-All commands are available through the Command Palette (Ctrl+Shift+P):
+All commands are available through the Command Palette (Ctrl+Shift+P / Cmd+Shift+P):
 
-- `Aider: Start Chat` - Open the Aider chat panel
-- `Aider: Send Message` - Send a message to Aider
+### Chat Commands
+- `Aider: Start Chat` - Open the Aider chat panel in the sidebar
+- `Aider: Send Message` - Send a message to Aider via input box
+- `Aider: Paste to Chat` - Paste clipboard content into chat input
+
+### File Management Commands
 - `Aider: Add File to Chat` - Add current file to chat context
 - `Aider: Remove File from Chat` - Remove file from chat context
-- `Aider: Clear Chat History` - Clear all messages
-- `Aider: Undo Last Changes` - Revert last commit
+- `Aider: Clear Chat History` - Clear all chat messages
+
+### Change Management Commands
+- `Aider: Undo Last Changes` - Revert last commit made by Aider
 - `Aider: Show Diff` - Display changes since last message
+
+### Preview Commands
 - `Aider: Open App Preview` - Open full-page app preview panel
 - `Aider: Refresh Preview` - Reload the preview panel
+- `Aider: Set Preview URL` - Set the URL for live preview
 - `Aider: Highlight Element in Preview` - Highlight a specific element by XPath
 - `Aider: Scroll to Element in Preview` - Scroll to and highlight an element
-- `Aider: Set Preview URL` - Set the URL for live preview
-- `Aider: Paste to Chat` - Paste clipboard content into chat input
+
+### Screenshot Commands
+- `Aider: Upload Screenshot for Code Generation` - Upload a screenshot to generate code
+- `Aider: Paste Screenshot from Clipboard` - Paste screenshot for code generation
+
+### Project Context Commands
+- `Aider: View Project Context` - Open project context panel
+- `Aider: Edit Project Context` - Edit project rules, design principles, and patterns
+
+### GitHub Integration Commands
+- `Aider GitHub: Push Changes` - Push changes to remote repository
+- `Aider GitHub: Pull Changes` - Pull changes from remote repository
+- `Aider GitHub: Create Branch` - Create a new git branch
+- `Aider GitHub: Create Pull Request` - Create a pull request on GitHub
+- `Aider GitHub: Clone Repository` - Clone a GitHub repository
+- `Aider GitHub: Fetch Template` - Fetch and apply a repository template
+- `Aider GitHub: Natural Language Command` - Execute GitHub operations using natural language
+- `Aider GitHub: Authenticate` - Authenticate with GitHub CLI
+
+**Note**: GitHub commands require the GitHub CLI (`gh`) to be installed and authenticated. See [Prerequisites](#prerequisites) for setup instructions.
 
 ## Setting Up Aider Backend
 
@@ -274,30 +416,187 @@ For remote development, configure the `aider.apiEndpoint` setting to point to yo
 
 ### Extension not connecting to Aider
 
-1. Verify Aider is running: Visit the endpoint URL in your browser
-2. Check the `aider.apiEndpoint` setting
+**Symptoms**: Error messages about "Cannot connect to Aider backend"
+
+**Solutions**:
+1. Verify Aider is running: Visit `http://localhost:8501` in your browser
+2. Check the `aider.apiEndpoint` setting in VS Code (File > Preferences > Settings > Aider)
 3. Ensure no firewall is blocking the connection
+4. Check the Output panel (View > Output) and select "Aider" to see detailed logs
+5. Try restarting the Aider backend with `aider --browser`
 
 ### Changes not being applied
 
-1. Ensure you're in a Git repository
+**Symptoms**: Code changes suggested by Aider aren't appearing in files
+
+**Solutions**:
+1. Ensure you're in a Git repository (`git init` if needed)
 2. Check that files are not read-only
-3. Verify Aider has write permissions
+3. Verify Aider has write permissions to the files
+4. Check for error messages in the Output panel
 
 ### Chat not responding
 
+**Symptoms**: Messages sent but no response from Aider
+
+**Solutions**:
 1. Check the Output panel (View > Output) and select "Aider" from the dropdown
-2. Look for error messages
-3. Try restarting the extension
+2. Look for error messages or connection issues
+3. Verify the backend is responding: `curl http://localhost:8501/api/health`
+4. Try restarting the extension: Developer: Reload Window command
+5. Check if the AI model is available and configured correctly
 
-## Development
+### GitHub CLI commands not working
 
-### Building
+**Symptoms**: GitHub commands fail with "gh is not installed" error
 
+**Solutions**:
+1. Install GitHub CLI: https://cli.github.com/
+2. Authenticate with: `gh auth login`
+3. Verify installation: `gh --version`
+4. Restart VS Code after installing
+5. Check the "Aider GitHub" output channel for detailed errors
+
+The extension will gracefully disable GitHub features if the CLI is unavailable.
+
+### TypeScript compilation errors
+
+**Symptoms**: Build fails with TypeScript errors
+
+**Solutions**:
 ```bash
+cd vscode-extension
+rm -rf node_modules package-lock.json
 npm install
 npm run compile
 ```
+
+### Extension not loading
+
+**Symptoms**: Aider icon doesn't appear in Activity Bar
+
+**Solutions**:
+1. Check VS Code version is 1.85.0 or higher
+2. Look for activation errors: Developer: Show Logs > Extension Host
+3. Try reinstalling the extension
+4. Check that `out/extension.js` exists in the extension directory
+
+### Preview panel not loading
+
+**Symptoms**: Preview panel shows blank or error
+
+**Solutions**:
+1. Verify your app is running at the configured URL
+2. Check CORS settings on your development server
+3. Try refreshing the preview panel
+4. Update the preview URL: "Aider: Set Preview URL" command
+
+For more help:
+- See [USAGE.md](USAGE.md) for detailed usage instructions
+- Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if it exists
+- Open an issue on GitHub with error logs from the Output panel
+
+## Development
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/Aider-AI/aider.git
+cd aider/vscode-extension
+
+# Install dependencies
+npm install
+
+# Compile TypeScript
+npm run compile
+
+# Watch for changes (auto-recompile)
+npm run watch
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+npm run test
+
+# Run tests with coverage
+npm run test -- --coverage
+```
+
+### Linting
+
+```bash
+# Run ESLint
+npm run lint
+
+# Fix auto-fixable issues
+npm run lint -- --fix
+```
+
+### Packaging
+
+Create a `.vsix` package for distribution:
+
+```bash
+# Package the extension
+npm run package
+
+# This creates: aider-vscode-0.1.0.vsix
+```
+
+Install the package in VS Code:
+1. Extensions view (Ctrl+Shift+X)
+2. Click `...` menu → "Install from VSIX..."
+3. Select the `.vsix` file
+
+### Debugging
+
+1. Open the `vscode-extension` folder in VS Code
+2. Press `F5` to launch Extension Development Host
+3. Set breakpoints in TypeScript files
+4. Use Debug Console to inspect variables
+5. Reload with Ctrl+R (Cmd+R) to test changes
+
+### Project Structure
+
+```
+vscode-extension/
+├── src/                    # TypeScript source files
+│   ├── extension.ts        # Main extension entry point
+│   ├── aiderClient.ts      # Aider API client
+│   ├── githubClient.ts     # GitHub CLI integration
+│   ├── chatProvider.ts     # Chat webview provider
+│   ├── filesProvider.ts    # Files tree view
+│   ├── previewProvider.ts  # Preview webview provider
+│   ├── providerManager.ts  # AI provider management
+│   └── test/               # Test files
+├── out/                    # Compiled JavaScript (gitignored)
+├── package.json            # Extension manifest
+├── tsconfig.json           # TypeScript configuration
+└── README.md              # This file
+```
+
+### Making Changes
+
+1. Modify TypeScript files in `src/`
+2. Run `npm run compile` (or use watch mode)
+3. Reload Extension Development Host (Ctrl+R / Cmd+R)
+4. Test your changes
+5. Run tests: `npm run test`
+6. Run linter: `npm run lint`
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add/update tests
+5. Ensure linting passes
+6. Submit a pull request
+
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for detailed guidelines.
 
 ### Testing
 

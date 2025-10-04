@@ -66,6 +66,12 @@ export class GitHubClient {
      * Execute a GitHub CLI command
      */
     private async executeGitHubCommand(command: string, description: string): Promise<string> {
+        // Check if gh CLI is installed first
+        const isInstalled = await this.isGitHubCLIInstalled();
+        if (!isInstalled) {
+            throw new Error('GitHub CLI (gh) is not installed. Please install it from https://cli.github.com/');
+        }
+
         this.outputChannel.show();
         this.outputChannel.appendLine(`\n=== ${description} ===`);
         this.outputChannel.appendLine(`Command: ${command}`);
@@ -82,6 +88,13 @@ export class GitHubClient {
         } catch (error: any) {
             const errorMessage = error.message || String(error);
             this.outputChannel.appendLine(`Error: ${errorMessage}`);
+            
+            // Provide helpful error messages
+            if (errorMessage.includes('not logged in') || errorMessage.includes('authentication')) {
+                throw new Error('Not authenticated with GitHub CLI. Please run "Aider GitHub: Authenticate" first.');
+            } else if (errorMessage.includes('not a git repository')) {
+                throw new Error('Current workspace is not a git repository. Please initialize git first.');
+            }
             throw new Error(errorMessage);
         }
     }
@@ -90,55 +103,75 @@ export class GitHubClient {
      * Push changes to GitHub
      */
     async push(remote: string = 'origin', branch?: string): Promise<void> {
-        const branchArg = branch ? ` ${branch}` : '';
-        await this.executeGitHubCommand(
-            `git push ${remote}${branchArg}`,
-            `Pushing to ${remote}${branchArg}`
-        );
-        vscode.window.showInformationMessage(`Successfully pushed to ${remote}`);
+        try {
+            const branchArg = branch ? ` ${branch}` : '';
+            await this.executeGitHubCommand(
+                `git push ${remote}${branchArg}`,
+                `Pushing to ${remote}${branchArg}`
+            );
+            vscode.window.showInformationMessage(`Successfully pushed to ${remote}`);
+        } catch (error: any) {
+            this.outputChannel.appendLine(`Push failed: ${error.message}`);
+            throw error;
+        }
     }
 
     /**
      * Pull changes from GitHub
      */
     async pull(remote: string = 'origin', branch?: string): Promise<void> {
-        const branchArg = branch ? ` ${branch}` : '';
-        await this.executeGitHubCommand(
-            `git pull ${remote}${branchArg}`,
-            `Pulling from ${remote}${branchArg}`
-        );
-        vscode.window.showInformationMessage(`Successfully pulled from ${remote}`);
+        try {
+            const branchArg = branch ? ` ${branch}` : '';
+            await this.executeGitHubCommand(
+                `git pull ${remote}${branchArg}`,
+                `Pulling from ${remote}${branchArg}`
+            );
+            vscode.window.showInformationMessage(`Successfully pulled from ${remote}`);
+        } catch (error: any) {
+            this.outputChannel.appendLine(`Pull failed: ${error.message}`);
+            throw error;
+        }
     }
 
     /**
      * Create a new branch
      */
     async createBranch(branchName: string, checkout: boolean = true): Promise<void> {
-        const checkoutFlag = checkout ? '-b' : '';
-        await this.executeGitHubCommand(
-            `git ${checkout ? 'checkout' : 'branch'} ${checkoutFlag} ${branchName}`,
-            `Creating branch: ${branchName}`
-        );
-        vscode.window.showInformationMessage(`Successfully created branch: ${branchName}`);
+        try {
+            const checkoutFlag = checkout ? '-b' : '';
+            await this.executeGitHubCommand(
+                `git ${checkout ? 'checkout' : 'branch'} ${checkoutFlag} ${branchName}`,
+                `Creating branch: ${branchName}`
+            );
+            vscode.window.showInformationMessage(`Successfully created branch: ${branchName}`);
+        } catch (error: any) {
+            this.outputChannel.appendLine(`Branch creation failed: ${error.message}`);
+            throw error;
+        }
     }
 
     /**
      * Create a pull request
      */
     async createPullRequest(title: string, body?: string, base?: string): Promise<void> {
-        let command = `gh pr create --title "${title}"`;
-        if (body) {
-            command += ` --body "${body}"`;
+        try {
+            let command = `gh pr create --title "${title}"`;
+            if (body) {
+                command += ` --body "${body}"`;
+            }
+            if (base) {
+                command += ` --base ${base}`;
+            }
+            
+            const output = await this.executeGitHubCommand(
+                command,
+                'Creating pull request'
+            );
+            vscode.window.showInformationMessage('Pull request created successfully');
+        } catch (error: any) {
+            this.outputChannel.appendLine(`PR creation failed: ${error.message}`);
+            throw error;
         }
-        if (base) {
-            command += ` --base ${base}`;
-        }
-        
-        const output = await this.executeGitHubCommand(
-            command,
-            'Creating pull request'
-        );
-        vscode.window.showInformationMessage('Pull request created successfully');
     }
 
     /**
