@@ -38,6 +38,17 @@ RUN ARCH=$(uname -m) && \
     rm supabase.tar.gz && \
     chmod +x /usr/local/bin/supabase
 
+# Install Ollama
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        OLLAMA_ARCH="linux-amd64"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        OLLAMA_ARCH="linux-arm64"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    curl -fsSL https://ollama.com/install.sh | sh
+
 WORKDIR /workspace
 
 # Create virtual environment and directories with proper permissions
@@ -49,16 +60,19 @@ RUN python -m venv /venv && \
         /home/coder/pw-browsers \
         /home/coder/.config \
         /home/coder/.local \
+        /home/coder/.ollama \
         /workspace && \
     chown -R coder:coder /home/coder /workspace /venv && \
-    chmod -R 777 /home/coder/.aider /home/coder/.cache /home/coder/pw-browsers && \
+    chmod -R 777 /home/coder/.aider /home/coder/.cache /home/coder/pw-browsers /home/coder/.ollama && \
     git config --system --add safe.directory /workspace
 
 # Environment variables
 ENV PATH="/venv/bin:$PATH" \
     PLAYWRIGHT_BROWSERS_PATH=/home/coder/pw-browsers \
     PLAYWRIGHT_SKIP_BROWSER_GC=1 \
-    HOME=/home/coder
+    HOME=/home/coder \
+    OLLAMA_HOST=0.0.0.0:11434 \
+    OLLAMA_MODELS=/home/coder/.ollama/models
 
 #########################
 FROM base AS aider-vscode
@@ -90,7 +104,7 @@ USER coder
 RUN mkdir -p /home/coder/.config/code-server && \
     printf "bind-addr: 0.0.0.0:8443\nauth: password\ncert: false\n" > /home/coder/.config/code-server/config.yaml
 
-EXPOSE 8443 5000
+EXPOSE 8443 5000 11434
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 

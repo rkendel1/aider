@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { AiderClient, AiderMessage } from './aiderClient';
+import { ProviderManager, AIProvider } from './providerManager';
 
 /**
  * Provider for the Aider chat webview
@@ -8,11 +9,15 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'aider.chatView';
     private _view?: vscode.WebviewView;
     private messages: AiderMessage[] = [];
+    private providerManager: ProviderManager;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
-        private readonly aiderClient: AiderClient
-    ) {}
+        private readonly aiderClient: AiderClient,
+        providerManager?: ProviderManager
+    ) {
+        this.providerManager = providerManager || new ProviderManager();
+    }
 
     public async resolveWebviewView(
         webviewView: vscode.WebviewView,
@@ -35,38 +40,67 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage(async data => {
             switch (data.type) {
                 case 'sendMessage':
-                    await this.sendMessage(data.message);
+                    await this.sendMessage(data.message, data.provider);
                     break;
                 case 'clearChat':
                     await this.clearMessages();
+                    break;
+                case 'setProvider':
+                    this.providerManager.setCurrentProvider(data.provider);
+                    this._view?.webview.postMessage({
+                        type: 'providerChanged',
+                        provider: data.provider
+                    });
+                    break;
+                case 'getProviders':
+                    this._view?.webview.postMessage({
+                        type: 'providersList',
+                        providers: this.providerManager.getAllProviders(),
+                        current: this.providerManager.getCurrentProvider()
+                    });
                     break;
             }
         });
     }
 
-    public async sendMessage(message: string) {
+    public async sendMessage(message: string, provider?: AIProvider) {
         if (!this._view) {
             return;
         }
 
+        // Determine which provider to use
+        let selectedProvider = provider;
+        if (!selectedProvider) {
+            // Auto-select based on complexity if not manually specified
+            const config = vscode.workspace.getConfiguration('aider');
+            const autoSelect = config.get<boolean>('aiProvider.autoSelect', false);
+            
+            if (autoSelect) {
+                selectedProvider = this.providerManager.analyzeQueryComplexity(message);
+            } else {
+                selectedProvider = this.providerManager.getCurrentProvider();
+            }
+        }
+
         // Add user message
-        this.messages.push({ role: 'user', content: message });
+        this.messages.push({ role: 'user', content: message, provider: selectedProvider });
         this._view.webview.postMessage({
             type: 'addMessage',
-            message: { role: 'user', content: message }
+            message: { role: 'user', content: message, provider: selectedProvider }
         });
 
         try {
-            // Send to Aider backend
-            const response = await this.aiderClient.sendMessage(message);
+            // Send to Aider backend with provider info
+            const response = await this.aiderClient.sendMessage(message, selectedProvider);
             
             // Add assistant responses
             if (response.messages) {
                 for (const msg of response.messages) {
-                    this.messages.push(msg);
+                    const messageWithProvider = { ...msg, provider: response.provider || selectedProvider };
+                    this.messages.push(messageWithProvider);
                     this._view.webview.postMessage({
                         type: 'addMessage',
-                        message: msg
+                        message: messageWithProvider
                     });
                 }
             }
@@ -80,7 +114,8 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
         } catch (error) {
             const errorMsg = { 
                 role: 'system' as const, 
-                content: `Error: ${error}` 
+                content: `Error: ${error}`,
+                provider: selectedProvider
             };
             this.messages.push(errorMsg);
             this._view.webview.postMessage({
@@ -97,6 +132,10 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                 text: text
             });
         }
+    }
+
+    public getProviderManager(): ProviderManager {
+        return this.providerManager;
     }
 
     public async clearMessages() {
@@ -198,9 +237,35 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                     margin-bottom: 5px;
                     text-transform: capitalize;
                 }
+                .message-provider {
+                    font-size: 0.8em;
+                    color: var(--vscode-descriptionForeground);
+                    margin-left: 8px;
+                }
                 .message-content {
                     white-space: pre-wrap;
                     word-wrap: break-word;
+                }
+                #provider-container {
+                    display: flex;
+                    gap: 5px;
+                    margin-bottom: 10px;
+                    padding: 8px;
+                    background-color: var(--vscode-sideBar-background);
+                    border-radius: 4px;
+                    align-items: center;
+                }
+                #provider-container label {
+                    font-weight: bold;
+                    margin-right: 5px;
+                }
+                #provider-select {
+                    padding: 4px 8px;
+                    border: 1px solid var(--vscode-input-border);
+                    background-color: var(--vscode-input-background);
+                    color: var(--vscode-input-foreground);
+                    border-radius: 4px;
+                    cursor: pointer;
                 }
                 #input-container {
                     display: flex;
@@ -232,6 +297,14 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
             </style>
         </head>
         <body>
+            <div id="provider-container">
+                <label for="provider-select">AI Provider:</label>
+                <select id="provider-select">
+                    <option value="default">Default</option>
+                    <option value="ollama">Ollama</option>
+                    <option value="copilot">GitHub Copilot</option>
+                </select>
+            </div>
             <div id="messages"></div>
             <div id="input-container">
                 <input type="text" id="message-input" placeholder="Ask Aider to modify your code..." />
@@ -243,6 +316,10 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                 const messagesContainer = document.getElementById('messages');
                 const messageInput = document.getElementById('message-input');
                 const sendButton = document.getElementById('send-button');
+                const providerSelect = document.getElementById('provider-select');
+
+                // Request current provider list on load
+                vscode.postMessage({ type: 'getProviders' });
 
                 function addMessage(message) {
                     const messageDiv = document.createElement('div');
@@ -251,6 +328,14 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                     const roleDiv = document.createElement('div');
                     roleDiv.className = 'message-role';
                     roleDiv.textContent = message.role;
+                    
+                    // Add provider badge if available
+                    if (message.provider && message.provider !== 'default') {
+                        const providerSpan = document.createElement('span');
+                        providerSpan.className = 'message-provider';
+                        providerSpan.textContent = '(' + message.provider + ')';
+                        roleDiv.appendChild(providerSpan);
+                    }
                     
                     const contentDiv = document.createElement('div');
                     contentDiv.className = 'message-content';
@@ -265,13 +350,24 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                 function sendMessage() {
                     const message = messageInput.value.trim();
                     if (message) {
+                        const selectedProvider = providerSelect.value;
                         vscode.postMessage({
                             type: 'sendMessage',
-                            message: message
+                            message: message,
+                            provider: selectedProvider
                         });
                         messageInput.value = '';
                     }
                 }
+
+                // Handle provider change
+                providerSelect.addEventListener('change', (e) => {
+                    const selectedProvider = e.target.value;
+                    vscode.postMessage({
+                        type: 'setProvider',
+                        provider: selectedProvider
+                    });
+                });
 
                 sendButton.addEventListener('click', sendMessage);
                 messageInput.addEventListener('keypress', (e) => {
@@ -293,6 +389,25 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                         case 'pasteText':
                             messageInput.value = message.text;
                             messageInput.focus();
+                            break;
+                        case 'providerChanged':
+                            providerSelect.value = message.provider;
+                            break;
+                        case 'providersList':
+                            // Update dropdown with available providers
+                            if (message.providers) {
+                                providerSelect.innerHTML = '';
+                                message.providers.forEach(provider => {
+                                    const option = document.createElement('option');
+                                    option.value = provider.type;
+                                    option.textContent = provider.name;
+                                    option.disabled = !provider.enabled;
+                                    providerSelect.appendChild(option);
+                                });
+                                if (message.current) {
+                                    providerSelect.value = message.current;
+                                }
+                            }
                             break;
                     }
                 });

@@ -1,8 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
+import { AIProvider } from './providerManager';
 
 export interface AiderMessage {
     role: 'user' | 'assistant' | 'system' | 'info';
     content: string;
+    provider?: AIProvider;
 }
 
 export interface AiderEdit {
@@ -16,6 +18,7 @@ export interface AiderResponse {
     messages: AiderMessage[];
     edits?: AiderEdit[];
     files?: string[];
+    provider?: AIProvider;
 }
 
 /**
@@ -39,13 +42,21 @@ export class AiderClient {
     /**
      * Send a message to Aider and get response
      */
-    async sendMessage(message: string): Promise<AiderResponse> {
+    async sendMessage(message: string, provider?: AIProvider): Promise<AiderResponse> {
         try {
             const response = await this.httpClient.post('/api/chat', {
                 message,
-                role: 'user'
+                role: 'user',
+                provider: provider || AIProvider.Default
             });
-            return response.data;
+            const data = response.data;
+            
+            // Add provider info to response if not present
+            if (data && !data.provider) {
+                data.provider = provider || AIProvider.Default;
+            }
+            
+            return data;
         } catch (error) {
             console.error('Error sending message to Aider:', error);
             throw new Error(`Failed to send message: ${error}`);
