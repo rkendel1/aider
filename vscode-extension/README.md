@@ -109,6 +109,8 @@ The extension provides two ways to preview your application:
 
 For detailed instructions, see [LIVE_PREVIEW_GUIDE.md](LIVE_PREVIEW_GUIDE.md).
 
+**New Visual-First Workflow**: See [VISUAL_WORKFLOW_GUIDE.md](VISUAL_WORKFLOW_GUIDE.md) for the complete guide to using the full-page preview panel and bidirectional communication features. Also check [QUICK_REFERENCE_VISUAL.md](QUICK_REFERENCE_VISUAL.md) for a quick start guide.
+
 ### Undoing Changes
 
 Click "Undo" in the notification, or run "Aider: Undo Last Changes" from the command palette.
