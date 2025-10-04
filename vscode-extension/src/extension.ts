@@ -4,12 +4,14 @@ import { AiderFilesProvider } from './filesProvider';
 import { AiderPreviewProvider, InspectorData } from './previewProvider';
 import { AiderClient } from './aiderClient';
 import { GitHubClient } from './githubClient';
+import { ProviderManager, AIProvider } from './providerManager';
 
 let aiderClient: AiderClient;
 let chatProvider: AiderChatProvider;
 let filesProvider: AiderFilesProvider;
 let previewProvider: AiderPreviewProvider;
 let githubClient: GitHubClient;
+let providerManager: ProviderManager;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Aider extension is now active!');
@@ -22,11 +24,32 @@ export function activate(context: vscode.ExtensionContext) {
     // Initialize GitHub client
     githubClient = new GitHubClient();
 
+    // Initialize provider manager
+    providerManager = new ProviderManager();
+
+    // Configure providers from settings
+    const ollamaEnabled = config.get<boolean>('aiProvider.ollama.enabled', false);
+    const ollamaEndpoint = config.get<string>('aiProvider.ollama.endpoint', 'http://localhost:11434');
+    const ollamaModel = config.get<string>('aiProvider.ollama.model', 'llama2');
+    
+    providerManager.setProviderEnabled(AIProvider.Ollama, ollamaEnabled);
+    providerManager.updateProviderConfig(AIProvider.Ollama, {
+        endpoint: ollamaEndpoint,
+        model: ollamaModel
+    });
+
+    const copilotEnabled = config.get<boolean>('aiProvider.copilot.enabled', false);
+    providerManager.setProviderEnabled(AIProvider.Copilot, copilotEnabled);
+
+    // Set default provider
+    const defaultProvider = config.get<string>('aiProvider.default', 'default') as AIProvider;
+    providerManager.setCurrentProvider(defaultProvider);
+
     // Check GitHub CLI availability
     checkGitHubCLI();
 
     // Initialize providers
-    chatProvider = new AiderChatProvider(context.extensionUri, aiderClient);
+    chatProvider = new AiderChatProvider(context.extensionUri, aiderClient, providerManager);
     filesProvider = new AiderFilesProvider(aiderClient);
     previewProvider = new AiderPreviewProvider(
         context.extensionUri,

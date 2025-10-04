@@ -5,6 +5,10 @@ AI pair programming with Aider directly in VS Code. This extension enables seaml
 ## Features
 
 - **Real-time Chat**: Interact with Aider through a built-in chat interface
+- **Multi-AI Provider Support**: Choose between Default, Ollama, and GitHub Copilot
+  - **Ollama**: Fast, local AI models for lightweight tasks
+  - **GitHub Copilot**: Advanced AI for complex, context-heavy work
+  - **Automatic Selection**: Let Aider choose the best provider based on task complexity
 - **Live Preview with Inspector**: View your application in VS Code and click elements to identify React components or CSS
 - **File Management**: Add/remove files from the chat context
 - **Live Changes**: Apply code changes directly to your project
@@ -38,11 +42,27 @@ AI pair programming with Aider directly in VS Code. This extension enables seaml
 
 ## Usage
 
+### AI Provider Selection
+
+The extension supports multiple AI providers. See [AI_PROVIDER_GUIDE.md](AI_PROVIDER_GUIDE.md) for complete details.
+
+**Quick Start:**
+
+1. **Manual Selection**: Use the dropdown at the top of the chat to select your provider
+   - **Default**: Uses your configured Aider backend model
+   - **Ollama**: Fast, local AI for simple tasks (requires setup)
+   - **GitHub Copilot**: Advanced AI for complex work (requires subscription)
+
+2. **Automatic Selection**: Enable in settings to let Aider choose based on task complexity
+   - Simple tasks → Ollama
+   - Complex tasks → Copilot/Default
+
 ### Starting a Chat
 
 1. Click on the Aider icon in the Activity Bar
-2. Type your request in the chat input
-3. Aider will analyze your code and suggest changes
+2. Select your AI provider from the dropdown
+3. Type your request in the chat input
+4. Aider will analyze your code and suggest changes
 
 ### Adding Files to Chat
 
@@ -76,12 +96,23 @@ Click "Undo" in the notification, or run "Aider: Undo Last Changes" from the com
 
 Access settings via File > Preferences > Settings, then search for "Aider":
 
+### General Settings
 - `aider.apiEndpoint`: Backend API endpoint URL (default: `http://localhost:8501`)
 - `aider.modelName`: AI model to use (e.g., `claude-3-7-sonnet-20250219`, `gpt-4o`)
 - `aider.autoCommit`: Automatically commit changes (default: `true`)
 - `aider.showDiffs`: Show diffs when changes are applied (default: `true`)
 - `aider.previewUrl`: Default URL for live preview (default: `http://localhost:3000`)
 - `aider.enableInspector`: Enable component/CSS inspector in live preview (default: `true`)
+
+### AI Provider Settings
+- `aider.aiProvider.default`: Default provider (`default`, `ollama`, `copilot`)
+- `aider.aiProvider.autoSelect`: Automatically choose provider based on task complexity
+- `aider.aiProvider.ollama.enabled`: Enable Ollama provider
+- `aider.aiProvider.ollama.endpoint`: Ollama API endpoint (default: `http://localhost:11434`)
+- `aider.aiProvider.ollama.model`: Ollama model to use (e.g., `llama2`, `codellama`)
+- `aider.aiProvider.copilot.enabled`: Enable GitHub Copilot provider
+
+For detailed provider configuration, see [AI_PROVIDER_GUIDE.md](AI_PROVIDER_GUIDE.md).
 
 ## Commands
 

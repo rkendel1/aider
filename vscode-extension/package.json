@@ -183,6 +183,37 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically prompt for GitHub authentication if not logged in"
+        },
+        "aider.aiProvider.default": {
+          "type": "string",
+          "default": "default",
+          "enum": ["default", "ollama", "copilot"],
+          "description": "Default AI provider to use"
+        },
+        "aider.aiProvider.autoSelect": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically select provider based on query complexity"
+        },
+        "aider.aiProvider.ollama.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Ollama as an AI provider"
+        },
+        "aider.aiProvider.ollama.endpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama API endpoint URL"
+        },
+        "aider.aiProvider.ollama.model": {
+          "type": "string",
+          "default": "llama2",
+          "description": "Ollama model to use (e.g., llama2, codellama, mistral)"
+        },
+        "aider.aiProvider.copilot.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable GitHub Copilot as an AI provider"
         }
       }
     }
