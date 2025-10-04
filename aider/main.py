@@ -11,7 +11,11 @@ from pathlib import Path
 try:
     import git
 except ImportError:
-    git = None
+    import sys
+    print("ERROR: Git is required for Aider to function.")
+    print("Please install Git from: https://github.com/git-guides/install-git")
+    print("And install GitPython with: pip install GitPython")
+    sys.exit(1)
 
 import importlib_resources
 import shtab
@@ -99,9 +103,6 @@ def make_new_repo(git_root, io):
 
 
 def setup_git(git_root, io):
-    if git is None:
-        return
-
     try:
         cwd = Path.cwd()
     except OSError:
@@ -454,9 +455,7 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     if argv is None:
         argv = sys.argv[1:]
 
-    if git is None:
-        git_root = None
-    elif force_git_root:
+    if force_git_root:
         git_root = force_git_root
     else:
         git_root = get_git_root()
@@ -508,9 +507,6 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
         parser.prog = "aider"
         print(shtab.complete(parser, shell=args.shell_completions))
         sys.exit(0)
-
-    if git is None:
-        args.git = False
 
     if args.analytics_disable:
         analytics = Analytics(permanently_disable=True)

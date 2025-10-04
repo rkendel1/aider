@@ -13,8 +13,11 @@ try:
         git.exc.GitCommandNotFound,
     ]
 except ImportError:
-    git = None
-    ANY_GIT_ERROR = []
+    import sys
+    print("ERROR: Git is required for Aider to function.")
+    print("Please install Git from: https://github.com/git-guides/install-git")
+    print("And install GitPython with: pip install GitPython")
+    sys.exit(1)
 
 import pathspec
 

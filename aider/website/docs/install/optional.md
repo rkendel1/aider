@@ -13,9 +13,34 @@ The steps below are completely optional.
 
 ## Install git
 
-Aider works best if you have git installed.
+**Git is now a required dependency for Aider.**
+You must have git installed for Aider to function.
 Here are
 [instructions for installing git in various environments](https://github.com/git-guides/install-git).
+
+After installing Git, you should also install the GitHub CLI for enhanced GitHub integration:
+
+### Install GitHub CLI (gh)
+
+The GitHub CLI enables Aider to provide seamless GitHub account connection and repository management features.
+
+- **macOS**: `brew install gh`
+- **Windows**: Download from [GitHub CLI releases](https://github.com/cli/cli/releases) or use `winget install --id GitHub.cli`
+- **Linux (Debian/Ubuntu)**: 
+  ```bash
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+  sudo apt update
+  sudo apt install gh
+  ```
+- **Linux (Fedora/RHEL)**: `sudo dnf install gh`
+
+For other platforms, see the [official GitHub CLI installation guide](https://github.com/cli/cli#installation).
+
+After installation, authenticate with GitHub:
+```bash
+gh auth login
+```
 
 ## Setup an API key
 

@@ -159,6 +159,33 @@ api_thread.start()
 3. Aider analyzes and fixes
 4. View the diff to understand the fix
 
+### Example 4: GitHub Integration - Push Changes
+
+1. Make changes to your code using Aider
+2. Run `Aider GitHub: Push Changes` from Command Palette
+3. Changes are pushed to your remote repository
+
+### Example 5: GitHub Integration - Create Pull Request
+
+1. Make changes using Aider
+2. Run `Aider GitHub: Create Pull Request`
+3. Enter PR title: "Add authentication feature"
+4. Enter description: "Implements user authentication with JWT tokens"
+5. PR is created on GitHub
+
+### Example 6: GitHub Integration - Natural Language
+
+1. Run `Aider GitHub: Natural Language Command`
+2. Enter: "push my changes to GitHub"
+3. Extension interprets and executes the push command
+
+### Example 7: Clone Template Repository
+
+1. Run `Aider GitHub: Fetch Template`
+2. Enter template repo: "username/react-template"
+3. Template is cloned to your workspace
+4. Start building with the template structure
+
 ## API Reference
 
 ### Extension Configuration
@@ -169,11 +196,14 @@ api_thread.start()
 | `aider.modelName` | string | `""` | AI model to use |
 | `aider.autoCommit` | boolean | `true` | Auto-commit changes |
 | `aider.showDiffs` | boolean | `true` | Show diffs for changes |
+| `aider.github.checkOnStartup` | boolean | `true` | Check GitHub CLI on startup |
+| `aider.github.autoAuthenticate` | boolean | `false` | Auto-prompt for GitHub auth |
 
 ### Commands
 
 All commands are accessible via Command Palette (Ctrl+Shift+P):
 
+**Chat Commands:**
 - `Aider: Start Chat` - Open chat panel
 - `Aider: Send Message` - Quick message dialog
 - `Aider: Add File to Chat` - Add current file
@@ -181,6 +211,16 @@ All commands are accessible via Command Palette (Ctrl+Shift+P):
 - `Aider: Clear Chat History` - Clear all messages
 - `Aider: Undo Last Changes` - Revert commit
 - `Aider: Show Diff` - View recent changes
+
+**GitHub CLI Commands:**
+- `Aider GitHub: Push Changes` - Push commits to remote repository
+- `Aider GitHub: Pull Changes` - Pull latest changes from remote
+- `Aider GitHub: Create Branch` - Create a new branch
+- `Aider GitHub: Create Pull Request` - Create a PR with title and description
+- `Aider GitHub: Clone Repository` - Clone a GitHub repository
+- `Aider GitHub: Fetch Template` - Fetch and apply a template repository
+- `Aider GitHub: Natural Language Command` - Use natural language for GitHub operations
+- `Aider GitHub: Authenticate` - Authenticate with GitHub CLI
 
 ### REST API Endpoints
 
@@ -205,6 +245,26 @@ All commands are accessible via Command Palette (Ctrl+Shift+P):
 **Solutions**:
 1. Verify backend is running: `curl http://localhost:5000/api/health`
 2. Check `aider.apiEndpoint` setting
+3. Ensure Flask server is accessible from VS Code
+
+### GitHub CLI Issues
+
+**Problem**: GitHub CLI commands fail or are unavailable
+
+**Solutions**:
+1. Install GitHub CLI: See [installation guide](https://github.com/cli/cli#installation)
+2. Authenticate with GitHub: Run `Aider GitHub: Authenticate` or `gh auth login` in terminal
+3. Check if `gh` is in PATH: Run `gh --version` in terminal
+4. On Windows, restart VS Code after installing `gh`
+
+### Authentication Issues
+
+**Problem**: "Not authenticated with GitHub" error
+
+**Solutions**:
+1. Run `Aider GitHub: Authenticate` from Command Palette
+2. Or run `gh auth login` in terminal and follow prompts
+3. Verify with: `gh auth status`
 3. Check firewall settings
 4. Look for errors in Output panel (View → Output → Aider)
 
