@@ -21,6 +21,9 @@ This directory contains a complete Docker-based development environment combinin
 - [Test Script](test-setup.sh) - Validation tests
 - [Secret Generator](generate-secrets.sh) - Production security
 
+📦 **Templates:**
+- [SaaS Starter](templates/saas-starter/README.md) - Production-ready SaaS template with Next.js, Supabase, and Stripe
+
 ## What You Get
 
 ✅ **Browser-Based IDE**: Access VS Code from anywhere via http://localhost:8443
@@ -218,6 +221,31 @@ See [README.md](README.md#security-considerations) for detailed security guidanc
 ```
 
 See [EXAMPLES.md](EXAMPLES.md) for more detailed integration examples.
+
+## Templates
+
+Pre-built templates to jumpstart your development:
+
+### SaaS Starter Template
+
+A production-ready template for building SaaS applications with:
+- **Next.js** - Modern React framework with TypeScript
+- **Supabase Authentication** - User signup, login, and management
+- **User Dashboard** - Profile and subscription management
+- **Stripe Integration** - Payment processing and subscriptions
+- **Tailwind CSS** - Beautiful, responsive UI
+
+**Quick start:**
+```bash
+cd docker/templates/saas-starter
+cp .env.example .env
+# Edit .env with your API keys
+docker compose up -d
+```
+
+Visit http://localhost:3000 to see the running application.
+
+For detailed instructions, see [templates/saas-starter/README.md](templates/saas-starter/README.md) or [templates/saas-starter/QUICKSTART.md](templates/saas-starter/QUICKSTART.md).
 
 ## Troubleshooting
 

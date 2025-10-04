@@ -484,12 +484,87 @@ docker exec -it docker-code-server-1 supervisorctl restart aider-api
 docker exec -it docker-code-server-1 supervisorctl tail -f aider-api
 ```
 
+## Example 9: SaaS Starter Template
+
+A production-ready template for building SaaS products with Next.js, Supabase, and Stripe.
+
+### What's Included
+
+- **Next.js Frontend**: Modern React framework with TypeScript
+- **Supabase Authentication**: Sign up, login, and logout functionality
+- **User Dashboard**: Protected dashboard with user profile and subscription info
+- **Stripe Integration**: Payment processing and subscription management
+- **Database Schema**: Pre-configured tables for users, subscriptions, and payments
+- **Tailwind CSS**: Responsive, modern UI components
+
+### Quick Start
+
+```bash
+# Navigate to the template
+cd docker/templates/saas-starter
+
+# Copy environment variables
+cp .env.example .env
+
+# Edit .env and add your API keys:
+# - OPENAI_API_KEY
+# - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+# - STRIPE_SECRET_KEY
+
+# Start all services
+docker compose up -d
+
+# The application will be available at:
+# - Frontend: http://localhost:3000
+# - Code-Server: http://localhost:8443
+# - Supabase API: http://localhost:8000
+```
+
+### Features in Detail
+
+1. **Authentication Flow**
+   - User signup with email and password
+   - Automatic user profile creation
+   - Protected routes and dashboard
+   - Logout functionality
+
+2. **User Dashboard**
+   - Display user information
+   - Show subscription status
+   - View account details
+   - Manage subscription
+
+3. **Payment Integration**
+   - Multiple pricing tiers (Starter, Pro, Enterprise)
+   - Monthly and yearly billing options
+   - Stripe Checkout integration
+   - Webhook handling for subscription updates
+
+4. **Database Schema**
+   - User profiles with extended information
+   - Subscription plans and user subscriptions
+   - Payment history tracking
+   - Row-level security (RLS) policies
+
+### Customizing the Template
+
+The template is designed to be easily customizable:
+
+- **Branding**: Update colors in `tailwind.config.js`
+- **Pricing**: Modify plans in `app/components/payments/PricingTable.tsx`
+- **Features**: Add new pages in `app/app/`
+- **Database**: Extend schema in `supabase/schema.sql`
+
+For complete documentation, see `docker/templates/saas-starter/README.md`.
+
 ## Additional Resources
 
 - [Supabase Documentation](https://supabase.com/docs)
 - [Aider Documentation](https://aider.chat/docs)
 - [Code-Server Documentation](https://coder.com/docs/code-server)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Stripe Documentation](https://stripe.com/docs)
 
 ## Contributing Examples
 
