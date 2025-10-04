@@ -2224,3 +2224,110 @@ class TestCommands(TestCase):
             )
             self.assertEqual(new_coder.done_messages, [{"role": "user", "content": "d1"}])
             self.assertEqual(new_coder.cur_messages, [{"role": "user", "content": "c1"}])
+
+    def test_cmd_clone_repo_valid_url(self):
+        """Test cloning a valid GitHub repository URL"""
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
+        coder = Coder.create(self.GPT35, None, io)
+        commands = Commands(io, coder)
+        
+        # Mock subprocess.run to simulate successful git clone
+        with mock.patch("subprocess.run") as mock_run:
+            mock_run.return_value = mock.Mock(returncode=0, stdout="Cloning into 'test-repo'...")
+            
+            target_dir = os.path.join(self.tempdir, "cloned-repo")
+            commands.cmd_clone_repo(f"https://github.com/test-user/test-repo {target_dir}")
+            
+            # Verify git clone was called with correct arguments
+            mock_run.assert_called_once()
+            call_args = mock_run.call_args[0][0]
+            self.assertEqual(call_args[0], "git")
+            self.assertEqual(call_args[1], "clone")
+            self.assertEqual(call_args[2], "https://github.com/test-user/test-repo")
+
+    def test_cmd_clone_repo_invalid_url(self):
+        """Test that invalid URLs are rejected"""
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
+        coder = Coder.create(self.GPT35, None, io)
+        commands = Commands(io, coder)
+        
+        with mock.patch.object(io, "tool_error") as mock_error:
+            commands.cmd_clone_repo("https://invalid-url.com/repo")
+            mock_error.assert_called()
+            # Check that error message contains "Invalid GitHub repository URL"
+            self.assertTrue(
+                any("Invalid GitHub repository URL" in str(call) for call in mock_error.call_args_list)
+            )
+
+    def test_cmd_clone_repo_no_args(self):
+        """Test that command without arguments shows usage"""
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
+        coder = Coder.create(self.GPT35, None, io)
+        commands = Commands(io, coder)
+        
+        with mock.patch.object(io, "tool_error") as mock_error, \
+             mock.patch.object(io, "tool_output") as mock_output:
+            commands.cmd_clone_repo("")
+            mock_error.assert_called_with("Please provide a GitHub repository URL.")
+            # Check that usage message was shown
+            self.assertTrue(
+                any("Usage:" in str(call) for call in mock_output.call_args_list)
+            )
+
+    def test_cmd_clone_repo_existing_nonempty_directory(self):
+        """Test that cloning to an existing non-empty directory fails"""
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
+        coder = Coder.create(self.GPT35, None, io)
+        commands = Commands(io, coder)
+        
+        # Create a non-empty directory
+        target_dir = os.path.join(self.tempdir, "existing-dir")
+        os.makedirs(target_dir)
+        Path(os.path.join(target_dir, "file.txt")).touch()
+        
+        with mock.patch.object(io, "tool_error") as mock_error:
+            commands.cmd_clone_repo(f"https://github.com/test-user/test-repo {target_dir}")
+            mock_error.assert_called()
+            # Check that error message mentions directory is not empty
+            self.assertTrue(
+                any("not empty" in str(call) for call in mock_error.call_args_list)
+            )
+
+    def test_cmd_clone_repo_git_url_format(self):
+        """Test that git@ URL format is accepted"""
+        io = InputOutput(pretty=False, fancy_input=False, yes=True)
+        coder = Coder.create(self.GPT35, None, io)
+        commands = Commands(io, coder)
+        
+        with mock.patch("subprocess.run") as mock_run:
+            mock_run.return_value = mock.Mock(returncode=0, stdout="Cloning...")
+            
+            target_dir = os.path.join(self.tempdir, "git-url-clone")
+            commands.cmd_clone_repo(f"git@github.com:test-user/test-repo.git {target_dir}")
+            
+            # Verify git clone was called
+            mock_run.assert_called_once()
+            call_args = mock_run.call_args[0][0]
+            self.assertEqual(call_args[2], "git@github.com:test-user/test-repo.git")
+
+    def test_cmd_clone_repo_default_directory(self):
+        """Test that default directory is suggested when not specified"""
+        io = InputOutput(pretty=False, fancy_input=False, yes=False)  # yes=False to prevent auto-confirm
+        coder = Coder.create(self.GPT35, None, io)
+        commands = Commands(io, coder)
+        
+        with mock.patch.object(io, "confirm_ask") as mock_confirm, \
+             mock.patch.object(io, "tool_output") as mock_output:
+            mock_confirm.return_value = False  # User declines
+            
+            commands.cmd_clone_repo("https://github.com/test-user/test-repo")
+            
+            # Verify confirm_ask was called with suggested directory
+            mock_confirm.assert_called_once()
+            self.assertIn("test-repo", str(mock_confirm.call_args))
+            
+            # Verify cancellation message was shown
+            self.assertTrue(
+                any("cancelled" in str(call).lower() for call in mock_output.call_args_list)
+            )
+
