@@ -239,3 +239,165 @@ pre-commit will then run automatically on each `git commit` command. You can use
 ```
 pre-commit run --all-files
 ```
+
+## Documentation Guidelines
+
+### Documentation Structure
+
+The project documentation is organized in the `docs/` directory with a clear, hierarchical structure:
+
+```
+docs/
+├── README.md                       # Master documentation index
+├── vscode-extension/               # VS Code extension documentation
+│   ├── README.md                   # Extension overview
+│   ├── setup/                      # Installation and configuration
+│   ├── usage/                      # User guides and workflows
+│   ├── features/                   # Feature-specific documentation
+│   └── development/                # Architecture and development
+├── docker/                         # Docker environment documentation
+│   ├── README.md                   # Docker overview
+│   ├── quickstart.md               # Quick start guide
+│   ├── setup.md                    # Detailed setup
+│   └── troubleshooting.md          # Common issues
+└── api/                            # API documentation
+    └── README.md                   # API reference
+```
+
+### Contributing to Documentation
+
+When adding or updating documentation:
+
+1. **Place files in the appropriate directory**:
+   - Installation guides → `docs/vscode-extension/setup/`
+   - Usage guides → `docs/vscode-extension/usage/`
+   - Feature docs → `docs/vscode-extension/features/`
+   - Development docs → `docs/vscode-extension/development/`
+   - Docker docs → `docs/docker/`
+
+2. **Follow the documentation style**:
+   - Use clear, concise language
+   - Include a Table of Contents for longer documents
+   - Add code examples where helpful
+   - Use consistent heading hierarchy
+   - Include links to related documentation
+
+3. **Update navigation**:
+   - Add links to new docs in the relevant README.md
+   - Update `docs/README.md` if adding major sections
+   - Ensure all cross-references are accurate
+
+4. **Use standard formatting**:
+   - Headers: `#` for title, `##` for sections, `###` for subsections
+   - Code blocks: Use appropriate language tags (```python, ```bash, etc.)
+   - Lists: Use `-` for unordered, `1.` for ordered
+   - Links: Use relative paths for internal docs
+   - Emphasis: **bold** for important terms, *italic* for emphasis
+
+5. **Include practical examples**:
+   - Show real-world usage
+   - Provide copy-paste ready code
+   - Include troubleshooting steps
+   - Add "Quick Start" sections for major features
+
+6. **Keep it up-to-date**:
+   - Update docs when changing features
+   - Remove outdated information
+   - Consolidate redundant content
+   - Archive obsolete documentation
+
+### Documentation Types
+
+**Setup Guides**
+- Prerequisites and requirements
+- Step-by-step installation
+- Configuration options
+- Verification steps
+- Common troubleshooting
+
+**Usage Guides**
+- Getting started tutorials
+- Common workflows
+- Best practices
+- Real-world examples
+- Tips and tricks
+
+**Feature Documentation**
+- Feature overview
+- Configuration options
+- Usage instructions
+- Examples and workflows
+- Advanced features
+- Limitations and gotchas
+
+**Development Documentation**
+- Architecture overview
+- Code organization
+- API reference
+- Contributing guidelines
+- Testing procedures
+
+### Documentation Review Checklist
+
+Before submitting documentation PRs:
+
+- [ ] Content is in the correct directory
+- [ ] File follows naming conventions (kebab-case.md)
+- [ ] Includes Table of Contents (for docs >100 lines)
+- [ ] Headers use proper hierarchy
+- [ ] Code blocks have language tags
+- [ ] Links are tested and working
+- [ ] Cross-references are updated
+- [ ] Examples are tested and working
+- [ ] Spelling and grammar checked
+- [ ] Navigation updated in parent README
+
+### Avoiding Documentation Clutter
+
+To keep documentation clean and maintainable:
+
+- **Consolidate similar content**: Don't create multiple docs for the same topic
+- **Use subdirectories**: Group related docs in folders (setup/, usage/, features/)
+- **Avoid redundancy**: Link to existing docs instead of duplicating content
+- **Archive old docs**: Move obsolete docs to `docs/archive/` or remove them
+- **Single source of truth**: Each topic should have one canonical document
+- **Clear naming**: Use descriptive, consistent file names
+
+### Example Documentation PR
+
+Good documentation PR:
+```
+Title: Add GitHub Integration feature documentation
+
+Changes:
+- Create docs/vscode-extension/features/github-integration.md
+- Update docs/vscode-extension/README.md with link
+- Add examples of common GitHub workflows
+- Include troubleshooting section
+```
+
+### Building Jekyll Documentation
+
+The main Aider documentation site uses Jekyll and is located in `aider/website/`:
+
+1. Navigate to the website directory:
+   ```
+   cd aider/website
+   ```
+
+2. Install dependencies:
+   ```
+   bundle install
+   ```
+
+3. Build the site:
+   ```
+   bundle exec jekyll build
+   ```
+
+4. Preview locally:
+   ```
+   bundle exec jekyll serve
+   ```
+
+The consolidated documentation in `docs/` is separate and focuses on repository-level documentation.
