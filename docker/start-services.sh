@@ -70,6 +70,22 @@ if [ ! -f "/etc/supervisor/conf.d/supervisord.conf" ]; then
     exit 1
 fi
 
+# Ensure supervisor directories exist
+SUPERVISOR_DIR="/home/coder/.config/supervisor"
+mkdir -p "$SUPERVISOR_DIR"
+touch "$SUPERVISOR_DIR/supervisord.log"
+chown -R coder:coder "$SUPERVISOR_DIR"
+
+# Install local aider package and dependencies at runtime
+if [ -d "/tmp/aider" ]; then
+    log "Installing local aider package..."
+    export SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
+    /venv/bin/python -m pip install --no-cache-dir /tmp/aider[help,browser,playwright] \
+        boto3 flask flask-cors \
+        --extra-index-url https://download.pytorch.org/whl/cpu
+    /venv/bin/python -m playwright install --with-deps chromium
+fi
+
 # Start supervisor to manage both code-server and aider API
 log "Starting supervisor to manage services..."
 log "Services will be available at:"

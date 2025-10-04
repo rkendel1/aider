@@ -31,21 +31,15 @@ RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip
 #########################
 FROM deps AS aider-full
 ENV AIDER_DOCKER_IMAGE=paulgauthier/aider-full
-RUN /venv/bin/python -m pip install --no-cache-dir /tmp/aider[help,browser,playwright] boto3 \
-       --extra-index-url https://download.pytorch.org/whl/cpu \
-    && /venv/bin/python -m playwright install --with-deps chromium \
-    && find /venv/lib/python3.10/site-packages \( -type d -exec chmod a+rwx {} + \) -o \( -type f -exec chmod a+rw {} + \) \
-    && rm -rf /tmp/aider
 USER appuser
-ENTRYPOINT ["/venv/bin/aider"]
+COPY docker/start-aider.sh /app/start-aider.sh
+RUN chmod +x /app/start-aider.sh
+ENTRYPOINT ["/app/start-aider.sh"]
 
 #########################
 FROM deps AS aider
 ENV AIDER_DOCKER_IMAGE=paulgauthier/aider
-RUN /venv/bin/python -m pip install --no-cache-dir /tmp/aider[playwright] boto3 google-cloud-aiplatform \
-       --extra-index-url https://download.pytorch.org/whl/cpu \
-    && /venv/bin/python -m playwright install --with-deps chromium \
-    && find /venv/lib/python3.10/site-packages \( -type d -exec chmod a+rwx {} + \) -o \( -type f -exec chmod a+rw {} + \) \
-    && rm -rf /tmp/aider
 USER appuser
-ENTRYPOINT ["/venv/bin/aider"]
+COPY docker/start-aider.sh /app/start-aider.sh
+RUN chmod +x /app/start-aider.sh
+ENTRYPOINT ["/app/start-aider.sh"]

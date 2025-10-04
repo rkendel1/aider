@@ -10,7 +10,7 @@ services:
       dockerfile: docker/Dockerfile.vscode
     ports:
       - "8443:8443"   # code-server UI
-      - "5001:5001"   # aider API
+      - "5001:5000"   # Aider API mapped to host port 5001 to avoid conflicts
     environment:
       PASSWORD: ${CODE_SERVER_PASSWORD:-aider}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
