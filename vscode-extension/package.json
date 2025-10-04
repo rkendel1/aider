@@ -261,6 +261,16 @@
           "default": "llama2",
           "description": "Ollama model to use (e.g., llama2, codellama, mistral)"
         },
+        "aider.aiProvider.ollama.visionModel": {
+          "type": "string",
+          "default": "llama3.2-vision",
+          "description": "Ollama vision-capable model for screenshot analysis (e.g., llama3.2-vision, llava)"
+        },
+        "aider.aiProvider.ollama.preloadVisionModel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically preload the vision model on container startup"
+        },
         "aider.aiProvider.copilot.enabled": {
           "type": "boolean",
           "default": false,
@@ -273,9 +283,14 @@
         },
         "aider.screenshot.defaultProvider": {
           "type": "string",
-          "default": "copilot",
+          "default": "ollama",
           "enum": ["default", "ollama", "copilot"],
           "description": "Default AI provider for screenshot analysis"
+        },
+        "aider.screenshot.autoSelectVisionModel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically select vision-capable model when screenshot is detected"
         },
         "aider.projectContext.enabled": {
           "type": "boolean",

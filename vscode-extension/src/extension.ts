@@ -36,11 +36,14 @@ export function activate(context: vscode.ExtensionContext) {
     const ollamaEnabled = config.get<boolean>('aiProvider.ollama.enabled', false);
     const ollamaEndpoint = config.get<string>('aiProvider.ollama.endpoint', 'http://localhost:11434');
     const ollamaModel = config.get<string>('aiProvider.ollama.model', 'llama2');
+    const ollamaVisionModel = config.get<string>('aiProvider.ollama.visionModel', 'llama3.2-vision');
     
     providerManager.setProviderEnabled(AIProvider.Ollama, ollamaEnabled);
     providerManager.updateProviderConfig(AIProvider.Ollama, {
         endpoint: ollamaEndpoint,
-        model: ollamaModel
+        model: ollamaModel,
+        visionModel: ollamaVisionModel,
+        supportsVision: true
     });
 
     const copilotEnabled = config.get<boolean>('aiProvider.copilot.enabled', false);

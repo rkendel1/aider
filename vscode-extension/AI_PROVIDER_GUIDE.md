@@ -64,11 +64,14 @@ Available Ollama models (must be pulled first):
 - `codellama` - Code-focused
 - `mistral` - Fast and efficient
 - `deepseek-coder` - Code generation specialist
+- `llama3.2-vision` - Vision-capable model for screenshot analysis (preloaded in container)
 
 To pull a model in the container:
 ```bash
 ollama pull llama2
 ```
+
+**Note**: The `llama3.2-vision` model is automatically preloaded when the container starts, so you don't need to manually pull it for screenshot-to-code generation.
 
 #### GitHub Copilot Configuration
 
@@ -109,13 +112,14 @@ The development container is pre-configured with Ollama:
 ### Using Ollama in the Container
 
 1. Start your development container
-2. Pull your desired models:
+2. The vision model (`llama3.2-vision`) is automatically preloaded on startup
+3. Pull additional models if needed:
    ```bash
    ollama pull llama2
    ollama pull codellama
    ```
 
-3. Test Ollama:
+4. Test Ollama:
    ```bash
    curl http://localhost:11434/api/generate -d '{
      "model": "llama2",
@@ -123,7 +127,45 @@ The development container is pre-configured with Ollama:
    }'
    ```
 
-4. Enable Ollama in VS Code settings as described above
+5. Test vision model:
+   ```bash
+   # List available models
+   ollama list
+   
+   # Should show llama3.2-vision in the list
+   ```
+
+6. Enable Ollama in VS Code settings as described above
+
+### Vision Model Support
+
+The container includes automatic support for vision-enabled models:
+
+**Preloaded Model**: `llama3.2-vision`
+- Automatically pulled on container startup
+- Ready for screenshot-to-code generation
+- Supports image analysis and code generation
+
+**Configuration**:
+```json
+{
+  "aider.aiProvider.ollama.visionModel": "llama3.2-vision",
+  "aider.aiProvider.ollama.preloadVisionModel": true,
+  "aider.screenshot.defaultProvider": "ollama",
+  "aider.screenshot.autoSelectVisionModel": true
+}
+```
+
+**Features**:
+- Automatic model selection for screenshot tasks
+- Fallback to other providers if model unavailable
+- Context-aware code generation
+- Structured output (JSX, CSS suggestions)
+
+**Manual Model Pull** (if needed):
+```bash
+ollama pull llama3.2-vision
+```
 
 ### Environment Variables
 
@@ -131,6 +173,7 @@ The following environment variables are configured:
 
 - `OLLAMA_HOST`: `0.0.0.0:11434` - Allows external connections
 - `OLLAMA_MODELS`: `/home/coder/.ollama/models` - Model storage location
+- `OLLAMA_VISION_MODEL`: `llama3.2-vision` - Default vision model for screenshots
 
 ## Usage Examples
 

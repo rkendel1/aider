@@ -72,7 +72,8 @@ ENV PATH="/venv/bin:$PATH" \
     PLAYWRIGHT_SKIP_BROWSER_GC=1 \
     HOME=/home/coder \
     OLLAMA_HOST=0.0.0.0:11434 \
-    OLLAMA_MODELS=/home/coder/.ollama/models
+    OLLAMA_MODELS=/home/coder/.ollama/models \
+    OLLAMA_VISION_MODEL=llama3.2-vision
 
 #########################
 FROM base AS aider-vscode
@@ -83,6 +84,7 @@ ENV AIDER_DOCKER_IMAGE=aider-vscode
 COPY --chown=coder:coder . /tmp/aider
 COPY --chown=coder:coder docker/start-services.sh /usr/local/bin/start-services.sh
 COPY --chown=coder:coder docker/start_aider_api_docker.py /usr/local/bin/start_aider_api.py
+COPY --chown=coder:coder docker/preload-vision-model.sh /usr/local/bin/preload-vision-model.sh
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Install aider, dependencies, playwright browsers, and configure in one layer
@@ -95,7 +97,7 @@ RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
         --extra-index-url https://download.pytorch.org/whl/cpu && \
     /venv/bin/python -m playwright install --with-deps chromium && \
     find /venv/lib/python3.10/site-packages \( -type d -exec chmod a+rwx {} + \) -o \( -type f -exec chmod a+rw {} + \) && \
-    chmod +x /usr/local/bin/start-services.sh /usr/local/bin/start_aider_api.py && \
+    chmod +x /usr/local/bin/start-services.sh /usr/local/bin/start_aider_api.py /usr/local/bin/preload-vision-model.sh && \
     rm -rf /tmp/aider
 
 USER coder
