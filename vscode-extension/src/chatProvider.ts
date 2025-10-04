@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { AiderClient, AiderMessage } from './aiderClient';
 import { ProviderManager, AIProvider } from './providerManager';
+import { ScreenshotService, ScreenshotData } from './screenshotService';
+import { ProjectContextManager } from './projectContext';
 
 /**
  * Provider for the Aider chat webview
@@ -10,13 +12,18 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
     private messages: AiderMessage[] = [];
     private providerManager: ProviderManager;
+    private screenshotService: ScreenshotService;
+    private projectContextManager?: ProjectContextManager;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
         private readonly aiderClient: AiderClient,
-        providerManager?: ProviderManager
+        providerManager?: ProviderManager,
+        projectContextManager?: ProjectContextManager
     ) {
         this.providerManager = providerManager || new ProviderManager();
+        this.screenshotService = new ScreenshotService();
+        this.projectContextManager = projectContextManager;
     }
 
     public async resolveWebviewView(
@@ -58,6 +65,9 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                         providers: this.providerManager.getAllProviders(),
                         current: this.providerManager.getCurrentProvider()
                     });
+                    break;
+                case 'screenshotUploaded':
+                    await this.handleScreenshot(data.screenshot);
                     break;
             }
         });
@@ -136,6 +146,167 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
 
     public getProviderManager(): ProviderManager {
         return this.providerManager;
+    }
+
+    public setProjectContextManager(manager: ProjectContextManager) {
+        this.projectContextManager = manager;
+    }
+
+    /**
+     * Handle screenshot upload and generate code
+     */
+    public async handleScreenshot(screenshot: ScreenshotData): Promise<void> {
+        if (!this._view) {
+            return;
+        }
+
+        // Validate screenshot
+        const validation = this.screenshotService.validateScreenshot(screenshot);
+        if (!validation.valid) {
+            this._view.webview.postMessage({
+                type: 'addMessage',
+                message: {
+                    role: 'system',
+                    content: `Error: ${validation.error}`
+                }
+            });
+            return;
+        }
+
+        // Get screenshot analysis provider from config
+        const config = vscode.workspace.getConfiguration('aider');
+        const screenshotProvider = config.get<string>('screenshot.defaultProvider', 'copilot') as AIProvider;
+
+        // Show processing message
+        this._view.webview.postMessage({
+            type: 'addMessage',
+            message: {
+                role: 'info',
+                content: `Analyzing screenshot with ${screenshotProvider}...`
+            }
+        });
+
+        try {
+            // Get project context if available
+            const projectContext = this.projectContextManager?.getContextAsPrompt();
+
+            // Build prompt for screenshot analysis
+            const prompt = this.buildScreenshotAnalysisPrompt(projectContext);
+
+            // Send to AI for analysis
+            // Note: This is a simplified version. In practice, you'd need to
+            // send the screenshot data along with the prompt to the AI service
+            const response = await this.aiderClient.sendMessage(prompt, screenshotProvider);
+
+            // Extract code from response
+            if (response.messages && response.messages.length > 0) {
+                const aiResponse = response.messages[0].content;
+                const { code, language } = this.screenshotService.extractCodeFromResponse(aiResponse);
+                const fileName = this.screenshotService.determineFileName(code, language);
+
+                // Validate against project rules if context is available
+                if (this.projectContextManager) {
+                    const validation = this.projectContextManager.validateAgainstRules(code);
+                    if (!validation.valid) {
+                        // Show warnings but still allow the code
+                        this._view.webview.postMessage({
+                            type: 'addMessage',
+                            message: {
+                                role: 'info',
+                                content: `⚠️ Generated code has potential violations:\n${validation.violations.join('\n')}`
+                            }
+                        });
+                    }
+                }
+
+                // Create the file
+                await this.createGeneratedFile(fileName, code);
+
+                this._view.webview.postMessage({
+                    type: 'addMessage',
+                    message: {
+                        role: 'assistant',
+                        content: `✅ Generated ${fileName} from screenshot. The file has been created and opened.`,
+                        provider: screenshotProvider
+                    }
+                });
+            }
+        } catch (error) {
+            this._view.webview.postMessage({
+                type: 'addMessage',
+                message: {
+                    role: 'system',
+                    content: `Error generating code from screenshot: ${error}`
+                }
+            });
+        }
+    }
+
+    /**
+     * Build prompt for screenshot analysis
+     */
+    private buildScreenshotAnalysisPrompt(projectContext?: string): string {
+        let prompt = 'I have uploaded a screenshot of a UI component. Please analyze it and generate the corresponding code.\n\n';
+        
+        if (projectContext) {
+            prompt += projectContext + '\n\n';
+        }
+
+        prompt += 'Requirements:\n';
+        prompt += '- Generate a complete, production-ready React/Next.js component\n';
+        prompt += '- Use TypeScript with proper types and interfaces\n';
+        prompt += '- Follow modern best practices and accessibility guidelines\n';
+        prompt += '- Make the component responsive\n';
+        prompt += '- Use Tailwind CSS or CSS modules for styling\n';
+        prompt += '- Include necessary imports\n';
+        
+        if (projectContext) {
+            prompt += '- Follow the project rules and design principles specified above\n';
+        }
+
+        return prompt;
+    }
+
+    /**
+     * Create a new file with generated code
+     */
+    private async createGeneratedFile(fileName: string, code: string): Promise<void> {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            throw new Error('No workspace folder open');
+        }
+
+        // Determine the target directory (can be made configurable)
+        const targetDir = vscode.Uri.joinPath(workspaceFolders[0].uri, 'src', 'components');
+        
+        // Create directory if it doesn't exist
+        try {
+            await vscode.workspace.fs.createDirectory(targetDir);
+        } catch (error) {
+            // Directory might already exist, that's okay
+        }
+
+        const fileUri = vscode.Uri.joinPath(targetDir, fileName);
+
+        // Write the file
+        await vscode.workspace.fs.writeFile(
+            fileUri,
+            Buffer.from(code, 'utf8')
+        );
+
+        // Open the file in the editor
+        const document = await vscode.workspace.openTextDocument(fileUri);
+        await vscode.window.showTextDocument(document, {
+            viewColumn: vscode.ViewColumn.Two,
+            preview: false
+        });
+
+        // Add the file to Aider's chat context
+        try {
+            await this.aiderClient.addFile(fileName);
+        } catch (error) {
+            console.error('Failed to add file to Aider context:', error);
+        }
     }
 
     public async clearMessages() {
@@ -294,6 +465,37 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                     opacity: 0.5;
                     cursor: not-allowed;
                 }
+                #screenshot-container {
+                    margin-bottom: 10px;
+                    padding: 10px;
+                    border: 2px dashed var(--vscode-input-border);
+                    border-radius: 4px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+                #screenshot-container:hover {
+                    background-color: var(--vscode-list-hoverBackground);
+                }
+                #screenshot-container.drag-over {
+                    background-color: var(--vscode-list-activeSelectionBackground);
+                    border-color: var(--vscode-button-background);
+                }
+                #screenshot-preview {
+                    max-width: 100%;
+                    max-height: 200px;
+                    margin-top: 10px;
+                    border-radius: 4px;
+                }
+                .hidden {
+                    display: none;
+                }
+                #screenshot-actions {
+                    margin-top: 10px;
+                }
+                #screenshot-actions button {
+                    margin-right: 5px;
+                }
             </style>
         </head>
         <body>
@@ -304,6 +506,18 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                     <option value="ollama">Ollama</option>
                     <option value="copilot">GitHub Copilot</option>
                 </select>
+            </div>
+            <div id="screenshot-container">
+                <p>📷 Drop or paste a screenshot here</p>
+                <p style="font-size: 0.9em; color: var(--vscode-descriptionForeground);">
+                    Or click to browse for an image
+                </p>
+                <input type="file" id="screenshot-input" accept="image/*" class="hidden" />
+                <img id="screenshot-preview" class="hidden" />
+                <div id="screenshot-actions" class="hidden">
+                    <button id="generate-code-button">Generate Code</button>
+                    <button id="clear-screenshot-button">Clear</button>
+                </div>
             </div>
             <div id="messages"></div>
             <div id="input-container">
@@ -317,9 +531,102 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
                 const messageInput = document.getElementById('message-input');
                 const sendButton = document.getElementById('send-button');
                 const providerSelect = document.getElementById('provider-select');
+                const screenshotContainer = document.getElementById('screenshot-container');
+                const screenshotInput = document.getElementById('screenshot-input');
+                const screenshotPreview = document.getElementById('screenshot-preview');
+                const screenshotActions = document.getElementById('screenshot-actions');
+                const generateCodeButton = document.getElementById('generate-code-button');
+                const clearScreenshotButton = document.getElementById('clear-screenshot-button');
+
+                let currentScreenshot = null;
 
                 // Request current provider list on load
                 vscode.postMessage({ type: 'getProviders' });
+
+                // Screenshot handling
+                screenshotContainer.addEventListener('click', () => {
+                    screenshotInput.click();
+                });
+
+                screenshotInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        loadScreenshot(file);
+                    }
+                });
+
+                // Drag and drop for screenshots
+                screenshotContainer.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    screenshotContainer.classList.add('drag-over');
+                });
+
+                screenshotContainer.addEventListener('dragleave', () => {
+                    screenshotContainer.classList.remove('drag-over');
+                });
+
+                screenshotContainer.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    screenshotContainer.classList.remove('drag-over');
+                    
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        loadScreenshot(file);
+                    }
+                });
+
+                // Paste screenshot from clipboard
+                document.addEventListener('paste', (e) => {
+                    const items = e.clipboardData.items;
+                    for (let item of items) {
+                        if (item.type.startsWith('image/')) {
+                            const file = item.getAsFile();
+                            if (file) {
+                                loadScreenshot(file);
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                });
+
+                function loadScreenshot(file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        currentScreenshot = {
+                            dataUrl: e.target.result,
+                            fileName: file.name,
+                            timestamp: Date.now()
+                        };
+                        screenshotPreview.src = e.target.result;
+                        screenshotPreview.classList.remove('hidden');
+                        screenshotActions.classList.remove('hidden');
+                        screenshotContainer.querySelector('p').textContent = 'Screenshot loaded';
+                    };
+                    reader.readAsDataURL(file);
+                }
+
+                generateCodeButton.addEventListener('click', () => {
+                    if (currentScreenshot) {
+                        vscode.postMessage({
+                            type: 'screenshotUploaded',
+                            screenshot: currentScreenshot
+                        });
+                        clearScreenshot();
+                    }
+                });
+
+                clearScreenshotButton.addEventListener('click', () => {
+                    clearScreenshot();
+                });
+
+                function clearScreenshot() {
+                    currentScreenshot = null;
+                    screenshotPreview.src = '';
+                    screenshotPreview.classList.add('hidden');
+                    screenshotActions.classList.add('hidden');
+                    screenshotInput.value = '';
+                    screenshotContainer.querySelector('p').textContent = '📷 Drop or paste a screenshot here';
+                }
 
                 function addMessage(message) {
                     const messageDiv = document.createElement('div');

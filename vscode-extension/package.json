@@ -130,6 +130,26 @@
         "command": "aider.scrollToElement",
         "title": "Aider: Scroll to Element in Preview",
         "icon": "$(arrow-down)"
+      },
+      {
+        "command": "aider.uploadScreenshot",
+        "title": "Aider: Upload Screenshot for Code Generation",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "aider.pasteScreenshot",
+        "title": "Aider: Paste Screenshot from Clipboard",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "aider.viewProjectContext",
+        "title": "Aider: View Project Context",
+        "icon": "$(book)"
+      },
+      {
+        "command": "aider.editProjectContext",
+        "title": "Aider: Edit Project Context",
+        "icon": "$(edit)"
       }
     ],
     "viewsContainers": {
@@ -154,6 +174,12 @@
           "id": "aider.previewView",
           "name": "Live Preview",
           "icon": "$(browser)"
+        },
+        {
+          "type": "webview",
+          "id": "aider.projectContextView",
+          "name": "Project Context",
+          "icon": "$(book)"
         },
         {
           "id": "aider.filesView",
@@ -239,6 +265,27 @@
           "type": "boolean",
           "default": false,
           "description": "Enable GitHub Copilot as an AI provider"
+        },
+        "aider.screenshot.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable screenshot-to-code generation feature"
+        },
+        "aider.screenshot.defaultProvider": {
+          "type": "string",
+          "default": "copilot",
+          "enum": ["default", "ollama", "copilot"],
+          "description": "Default AI provider for screenshot analysis"
+        },
+        "aider.projectContext.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable project-level context storage and suggestions"
+        },
+        "aider.projectContext.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically update project context based on interactions"
         }
       }
     }
