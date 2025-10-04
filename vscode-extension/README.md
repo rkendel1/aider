@@ -129,7 +129,7 @@ For detailed instructions, see [LIVE_PREVIEW_GUIDE.md](LIVE_PREVIEW_GUIDE.md).
 
 ### Screenshot-to-Code Generation
 
-Transform UI screenshots into production-ready code:
+Transform UI screenshots into production-ready code using vision-enabled AI models:
 
 1. **Open Aider Chat Panel** in the sidebar
 2. **Upload a Screenshot** using one of these methods:
@@ -141,11 +141,24 @@ Transform UI screenshots into production-ready code:
 5. Generated file is automatically created in `src/components/` and opened
 6. Review the code and make any refinements using Aider chat
 
-**Features:**
-- Uses your project context (rules, design principles) to generate compliant code
-- Validates against project rules and warns of violations
-- Supports all image formats (PNG, JPG, WEBP, etc.)
-- Choose AI provider for analysis (Ollama or Copilot recommended)
+**Vision Model Features:**
+- **Default Vision Model**: Uses `llama3.2-vision` by default for screenshot analysis
+- **Automatic Selection**: Automatically selects vision-capable model when screenshot is detected
+- **Model Preloading**: Vision model is preloaded on container startup for instant availability
+- **Fallback Support**: Gracefully falls back to other providers if model isn't available
+- **Context-Aware**: Uses your project context (rules, design principles) to generate compliant code
+- **Validation**: Validates against project rules and warns of violations
+- **Format Support**: Supports all image formats (PNG, JPG, WEBP, etc.)
+
+**Configuration:**
+```json
+{
+  "aider.screenshot.defaultProvider": "ollama",
+  "aider.screenshot.autoSelectVisionModel": true,
+  "aider.aiProvider.ollama.visionModel": "llama3.2-vision",
+  "aider.aiProvider.ollama.preloadVisionModel": true
+}
+```
 
 For detailed instructions, see [SCREENSHOT_CONTEXT_GUIDE.md](SCREENSHOT_CONTEXT_GUIDE.md).
 
@@ -200,11 +213,14 @@ Access settings via File > Preferences > Settings, then search for "Aider":
 - `aider.aiProvider.ollama.enabled`: Enable Ollama provider
 - `aider.aiProvider.ollama.endpoint`: Ollama API endpoint (default: `http://localhost:11434`)
 - `aider.aiProvider.ollama.model`: Ollama model to use (default: `llama2`)
+- `aider.aiProvider.ollama.visionModel`: Vision model for screenshot analysis (default: `llama3.2-vision`)
+- `aider.aiProvider.ollama.preloadVisionModel`: Preload vision model on startup (default: `true`)
 - `aider.aiProvider.copilot.enabled`: Enable GitHub Copilot provider
 
 ### Screenshot & Context Settings
 - `aider.screenshot.enabled`: Enable screenshot-to-code generation (default: `true`)
-- `aider.screenshot.defaultProvider`: AI provider for screenshot analysis (`default`, `ollama`, `copilot`)
+- `aider.screenshot.defaultProvider`: AI provider for screenshot analysis (default: `ollama`)
+- `aider.screenshot.autoSelectVisionModel`: Auto-select vision model for screenshots (default: `true`)
 - `aider.projectContext.enabled`: Enable project-level context storage (default: `true`)
 - `aider.projectContext.autoUpdate`: Automatically update project context (default: `true`)
 

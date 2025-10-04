@@ -175,14 +175,28 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
 
         // Get screenshot analysis provider from config
         const config = vscode.workspace.getConfiguration('aider');
-        const screenshotProvider = config.get<string>('screenshot.defaultProvider', 'copilot') as AIProvider;
+        const autoSelectVisionModel = config.get<boolean>('screenshot.autoSelectVisionModel', true);
+        
+        let screenshotProvider: AIProvider;
+        if (autoSelectVisionModel) {
+            // Automatically select the best vision-capable provider
+            screenshotProvider = this.providerManager.getVisionProvider();
+        } else {
+            // Use the configured default
+            screenshotProvider = config.get<string>('screenshot.defaultProvider', 'ollama') as AIProvider;
+        }
+
+        // Get the vision model if available
+        const visionModel = this.providerManager.getVisionModel(screenshotProvider);
+        const providerConfig = this.providerManager.getProviderConfig(screenshotProvider);
+        const providerName = providerConfig?.name || screenshotProvider;
 
         // Show processing message
         this._view.webview.postMessage({
             type: 'addMessage',
             message: {
                 role: 'info',
-                content: `Analyzing screenshot with ${screenshotProvider}...`
+                content: `Analyzing screenshot with ${providerName}${visionModel ? ` (${visionModel})` : ''}...`
             }
         });
 
@@ -190,55 +204,63 @@ export class AiderChatProvider implements vscode.WebviewViewProvider {
             // Get project context if available
             const projectContext = this.projectContextManager?.getContextAsPrompt();
 
-            // Build prompt for screenshot analysis
-            const prompt = this.buildScreenshotAnalysisPrompt(projectContext);
+            // Use the screenshot service to analyze the screenshot directly
+            const result = await this.screenshotService.analyzeScreenshot(
+                screenshot,
+                screenshotProvider,
+                visionModel,
+                providerConfig?.endpoint,
+                projectContext
+            );
 
-            // Send to AI for analysis
-            // Note: This is a simplified version. In practice, you'd need to
-            // send the screenshot data along with the prompt to the AI service
-            const response = await this.aiderClient.sendMessage(prompt, screenshotProvider);
+            const { code, fileName, language } = result;
 
-            // Extract code from response
-            if (response.messages && response.messages.length > 0) {
-                const aiResponse = response.messages[0].content;
-                const { code, language } = this.screenshotService.extractCodeFromResponse(aiResponse);
-                const fileName = this.screenshotService.determineFileName(code, language);
-
-                // Validate against project rules if context is available
-                if (this.projectContextManager) {
-                    const validation = this.projectContextManager.validateAgainstRules(code);
-                    if (!validation.valid) {
-                        // Show warnings but still allow the code
-                        this._view.webview.postMessage({
-                            type: 'addMessage',
-                            message: {
-                                role: 'info',
-                                content: `⚠️ Generated code has potential violations:\n${validation.violations.join('\n')}`
-                            }
-                        });
-                    }
+            // Validate against project rules if context is available
+            if (this.projectContextManager) {
+                const validation = this.projectContextManager.validateAgainstRules(code);
+                if (!validation.valid) {
+                    // Show warnings but still allow the code
+                    this._view.webview.postMessage({
+                        type: 'addMessage',
+                        message: {
+                            role: 'info',
+                            content: `⚠️ Generated code has potential violations:\n${validation.violations.join('\n')}`
+                        }
+                    });
                 }
-
-                // Create the file
-                await this.createGeneratedFile(fileName, code);
-
-                this._view.webview.postMessage({
-                    type: 'addMessage',
-                    message: {
-                        role: 'assistant',
-                        content: `✅ Generated ${fileName} from screenshot. The file has been created and opened.`,
-                        provider: screenshotProvider
-                    }
-                });
             }
-        } catch (error) {
+
+            // Create the file
+            await this.createGeneratedFile(fileName, code);
+
             this._view.webview.postMessage({
                 type: 'addMessage',
                 message: {
-                    role: 'system',
-                    content: `Error generating code from screenshot: ${error}`
+                    role: 'assistant',
+                    content: `✅ Generated ${fileName} from screenshot. The file has been created and opened.`,
+                    provider: screenshotProvider
                 }
             });
+        } catch (error) {
+            // Check if it's a model not found error
+            const errorMessage = String(error);
+            if (errorMessage.includes('model') && errorMessage.includes('not found')) {
+                this._view.webview.postMessage({
+                    type: 'addMessage',
+                    message: {
+                        role: 'system',
+                        content: `❌ Vision model not available. Please ensure the model is pulled:\n\`ollama pull ${visionModel}\`\n\nError: ${error}`
+                    }
+                });
+            } else {
+                this._view.webview.postMessage({
+                    type: 'addMessage',
+                    message: {
+                        role: 'system',
+                        content: `Error generating code from screenshot: ${error}`
+                    }
+                });
+            }
         }
     }
 

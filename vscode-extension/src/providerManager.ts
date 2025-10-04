@@ -15,7 +15,9 @@ export interface ProviderConfig {
     name: string;
     endpoint?: string;
     model?: string;
+    visionModel?: string;
     enabled: boolean;
+    supportsVision?: boolean;
 }
 
 /**
@@ -166,5 +168,41 @@ export class ProviderManager {
 
         // Default to current provider
         return this.currentProvider;
+    }
+
+    /**
+     * Get vision-capable model for a provider
+     */
+    getVisionModel(provider: AIProvider): string | undefined {
+        const config = this.providers.get(provider);
+        return config?.visionModel;
+    }
+
+    /**
+     * Check if a provider supports vision tasks
+     */
+    supportsVision(provider: AIProvider): boolean {
+        const config = this.providers.get(provider);
+        return config?.supportsVision || false;
+    }
+
+    /**
+     * Get the best provider for vision tasks (screenshot analysis)
+     */
+    getVisionProvider(): AIProvider {
+        // Check if Ollama is enabled and has vision support
+        const ollamaConfig = this.providers.get(AIProvider.Ollama);
+        if (ollamaConfig?.enabled && ollamaConfig?.supportsVision && ollamaConfig?.visionModel) {
+            return AIProvider.Ollama;
+        }
+
+        // Fall back to Copilot if enabled
+        const copilotConfig = this.providers.get(AIProvider.Copilot);
+        if (copilotConfig?.enabled) {
+            return AIProvider.Copilot;
+        }
+
+        // Fall back to default
+        return AIProvider.Default;
     }
 }

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { AIProvider } from './providerManager';
+import axios from 'axios';
 
 /**
  * Interface for screenshot data
@@ -31,43 +32,97 @@ export class ScreenshotService {
     async analyzeScreenshot(
         screenshot: ScreenshotData,
         provider: AIProvider,
+        visionModel?: string,
+        endpoint?: string,
         projectContext?: string
     ): Promise<ScreenshotCodeResult> {
-        // This will integrate with the AI provider to analyze the screenshot
-        // For now, we'll create a placeholder that can be connected to the actual AI service
-        
+        // Build prompt for screenshot analysis
         const prompt = this.buildScreenshotPrompt(screenshot, projectContext);
         
-        // The actual implementation will call the AI service
-        // For now, return a placeholder result
+        // Call the appropriate provider's vision API
+        let response: string;
+        if (provider === AIProvider.Ollama && visionModel && endpoint) {
+            response = await this.callOllamaVision(endpoint, visionModel, prompt, screenshot.dataUrl);
+        } else {
+            // Placeholder for other providers
+            response = '// Generated code will appear here';
+        }
+        
+        // Extract code from response
+        const { code, language } = this.extractCodeFromResponse(response);
+        const fileName = this.determineFileName(code, language);
+        
         return {
-            code: '// Generated code will appear here',
-            fileName: 'generated-component.tsx',
+            code,
+            fileName,
             description: 'Generated from screenshot',
-            language: 'typescript',
-            provider: provider
+            language,
+            provider
         };
+    }
+
+    /**
+     * Call Ollama vision API
+     */
+    private async callOllamaVision(
+        endpoint: string,
+        model: string,
+        prompt: string,
+        imageDataUrl: string
+    ): Promise<string> {
+        try {
+            // Extract base64 image data from data URL
+            const base64Data = imageDataUrl.split(',')[1];
+            
+            // Call Ollama API with vision support
+            const response = await axios.post(`${endpoint}/api/generate`, {
+                model: model,
+                prompt: prompt,
+                images: [base64Data],
+                stream: false,
+                options: {
+                    temperature: 0.7,
+                    num_predict: 2048
+                }
+            }, {
+                timeout: 120000 // 2 minute timeout for vision analysis
+            });
+
+            return response.data.response || '';
+        } catch (error) {
+            console.error('Ollama vision API error:', error);
+            throw new Error(`Failed to analyze screenshot with Ollama: ${error}`);
+        }
     }
 
     /**
      * Build AI prompt for screenshot analysis
      */
     private buildScreenshotPrompt(screenshot: ScreenshotData, projectContext?: string): string {
-        let prompt = 'Analyze this screenshot and generate the corresponding code.\n\n';
+        let prompt = 'Analyze this screenshot and generate the corresponding React/Next.js component code.\n\n';
         
         if (projectContext) {
+            prompt += '=== PROJECT CONTEXT ===\n';
             prompt += projectContext + '\n\n';
         }
 
-        prompt += 'Requirements:\n';
-        prompt += '- Generate a complete, production-ready component\n';
-        prompt += '- Use modern React/Next.js best practices\n';
-        prompt += '- Include proper TypeScript types\n';
-        prompt += '- Follow the project context rules and design principles\n';
-        prompt += '- Make the component responsive and accessible\n';
-        prompt += '- Use Tailwind CSS for styling if applicable\n\n';
+        prompt += '=== REQUIREMENTS ===\n';
+        prompt += '- Generate a complete, production-ready React component\n';
+        prompt += '- Use modern React/Next.js best practices with functional components and hooks\n';
+        prompt += '- Include proper TypeScript types and interfaces\n';
+        prompt += '- Follow the project context rules and design principles if provided\n';
+        prompt += '- Make the component responsive and accessible (ARIA labels, semantic HTML)\n';
+        prompt += '- Use Tailwind CSS for styling (utility classes)\n';
+        prompt += '- Match the visual design, layout, colors, and spacing from the screenshot as closely as possible\n';
+        prompt += '- Include all text content visible in the screenshot\n';
+        prompt += '- Export the component as a default export\n\n';
         
-        prompt += `Screenshot data: ${screenshot.dataUrl.substring(0, 100)}...\n`;
+        prompt += '=== OUTPUT FORMAT ===\n';
+        prompt += 'Provide ONLY the code in a single code block with no additional explanation.\n';
+        prompt += 'Use this exact format:\n';
+        prompt += '```typescript\n';
+        prompt += '// Your component code here\n';
+        prompt += '```\n';
 
         return prompt;
     }
