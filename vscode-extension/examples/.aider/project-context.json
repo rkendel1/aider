@@ -1,0 +1,27 @@
+{
+  "rules": [
+    "Use TypeScript for all components",
+    "No inline styles - use Tailwind CSS or CSS modules",
+    "Follow React best practices and hooks",
+    "Write unit tests for all components"
+  ],
+  "designPrinciples": [
+    "Mobile-first responsive design",
+    "WCAG 2.1 AA accessibility compliance",
+    "Consistent spacing using 8px grid system",
+    "Dark mode support required"
+  ],
+  "goals": [
+    "Build production-ready MVP",
+    "Maintain 90+ Lighthouse performance score",
+    "Support modern browsers (last 2 versions)"
+  ],
+  "codingPatterns": {
+    "Component Structure": "Functional components with TypeScript interfaces",
+    "API Calls": "Use custom hooks for data fetching (e.g., useQuery)",
+    "Error Handling": "Use ErrorBoundary for component errors, try-catch for async",
+    "Styling": "Tailwind utility classes with custom theme extensions"
+  },
+  "framework": "Next.js 14",
+  "lastUpdated": "2024-01-15T10:30:00.000Z"
+}
