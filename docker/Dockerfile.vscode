@@ -1,8 +1,7 @@
 FROM python:3.10-slim-bookworm AS base
 
-# Install system dependencies including code-server requirements and create user
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
+# Install system dependencies (code-server, supervisor, etc.)
+RUN apt-get update && apt-get install --no-install-recommends -y \
         build-essential \
         git \
         libportaudio2 \
@@ -12,11 +11,11 @@ RUN apt-get update && \
         ca-certificates \
         supervisor \
         dumb-init \
-        locales && \
-    sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && \
-    locale-gen && \
-    useradd -m -u 1000 -s /bin/bash coder && \
-    rm -rf /var/lib/apt/lists/*
+        locales \
+    && sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
+    && locale-gen \
+    && useradd -m -u 1000 -s /bin/bash coder \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV LANG=en_US.UTF-8
 
@@ -24,49 +23,22 @@ ENV LANG=en_US.UTF-8
 ARG CODE_SERVER_VERSION=4.20.0
 RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --version=${CODE_SERVER_VERSION}
 
-# Install Supabase CLI
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        SUPABASE_ARCH="linux-amd64"; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        SUPABASE_ARCH="linux-arm64"; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
-    wget -qO supabase.tar.gz "https://github.com/supabase/cli/releases/latest/download/supabase_${SUPABASE_ARCH}.tar.gz" && \
-    tar -xzf supabase.tar.gz -C /usr/local/bin && \
-    rm supabase.tar.gz && \
-    chmod +x /usr/local/bin/supabase
-
-# Install Ollama
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        OLLAMA_ARCH="linux-amd64"; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        OLLAMA_ARCH="linux-arm64"; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
-    curl -fsSL https://ollama.com/install.sh | sh
+# Install Supabase CLI (works for all architectures)
+RUN curl -fsSL https://supabase.com/cli/install.sh | sh
 
 WORKDIR /workspace
 
-# Create virtual environment and directories with proper permissions
+# Setup venv, dirs, and permissions
 RUN python -m venv /venv && \
-    mkdir -p \
-        /home/coder/.aider \
-        /home/coder/.aider/cache \
-        /home/coder/.cache \
-        /home/coder/pw-browsers \
-        /home/coder/.config \
-        /home/coder/.local \
-        /home/coder/.ollama \
-        /workspace && \
-    chown -R coder:coder /home/coder /workspace /venv && \
-    chmod -R 777 /home/coder/.aider /home/coder/.cache /home/coder/pw-browsers /home/coder/.ollama && \
-    git config --system --add safe.directory /workspace
+    mkdir -p /home/coder/.aider/cache /home/coder/.cache \
+             /home/coder/pw-browsers /home/coder/.config \
+             /home/coder/.local /home/coder/.ollama \
+             /workspace \
+    && chown -R coder:coder /home/coder /workspace /venv \
+    && chmod -R 777 /home/coder/.aider /home/coder/.cache /home/coder/pw-browsers /home/coder/.ollama \
+    && git config --system --add safe.directory /workspace
 
-# Environment variables
+# Env vars
 ENV PATH="/venv/bin:$PATH" \
     PLAYWRIGHT_BROWSERS_PATH=/home/coder/pw-browsers \
     PLAYWRIGHT_SKIP_BROWSER_GC=1 \
@@ -80,22 +52,18 @@ FROM base AS aider-vscode
 
 ENV AIDER_DOCKER_IMAGE=aider-vscode
 
-# Copy aider source and scripts
+# Copy source + config
 COPY --chown=coder:coder . /tmp/aider
 COPY --chown=coder:coder docker/start-services.sh /usr/local/bin/start-services.sh
 COPY --chown=coder:coder docker/start_aider_api_docker.py /usr/local/bin/start_aider_api.py
 COPY --chown=coder:coder docker/preload-vision-model.sh /usr/local/bin/preload-vision-model.sh
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Install aider, dependencies, playwright browsers, and configure in one layer
+# Install Python deps
 RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
     /venv/bin/python -m pip install --no-cache-dir \
-        /tmp/aider[help,browser,playwright] \
-        boto3 \
-        flask \
-        flask-cors \
+        boto3 flask flask-cors \
         --extra-index-url https://download.pytorch.org/whl/cpu && \
-    /venv/bin/python -m playwright install --with-deps chromium && \
     find /venv/lib/python3.10/site-packages \( -type d -exec chmod a+rwx {} + \) -o \( -type f -exec chmod a+rw {} + \) && \
     chmod +x /usr/local/bin/start-services.sh /usr/local/bin/start_aider_api.py /usr/local/bin/preload-vision-model.sh && \
     rm -rf /tmp/aider
@@ -109,5 +77,4 @@ RUN mkdir -p /home/coder/.config/code-server && \
 EXPOSE 8443 5000 11434
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-
 CMD ["/usr/local/bin/start-services.sh"]

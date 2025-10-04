@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  code-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.vscode
+    ports:
+      - "8443:8443"
+      - "5001:5000"
+    environment:
+      PASSWORD: ${CODE_SERVER_PASSWORD:-aider}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - workspace:/workspace
+      - aider-cache:/home/coder/.aider
+      - code-server-config:/home/coder/.config
+    networks:
+      - aider-network
+    restart: unless-stopped
+
+volumes:
+  workspace:
+  aider-cache:
+  code-server-config:
+
+networks:
+  aider-network:
+    driver: bridge
