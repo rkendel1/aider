@@ -6,6 +6,8 @@ import { AiderPreviewPanel } from './previewPanel';
 import { AiderClient } from './aiderClient';
 import { GitHubClient } from './githubClient';
 import { ProviderManager, AIProvider } from './providerManager';
+import { ProjectContextManager } from './projectContext';
+import { ProjectContextProvider } from './projectContextProvider';
 
 let aiderClient: AiderClient;
 let chatProvider: AiderChatProvider;
@@ -13,6 +15,8 @@ let filesProvider: AiderFilesProvider;
 let previewProvider: AiderPreviewProvider;
 let githubClient: GitHubClient;
 let providerManager: ProviderManager;
+let projectContextManager: ProjectContextManager | undefined;
+let projectContextProvider: ProjectContextProvider | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Aider extension is now active!');
@@ -46,11 +50,24 @@ export function activate(context: vscode.ExtensionContext) {
     const defaultProvider = config.get<string>('aiProvider.default', 'default') as AIProvider;
     providerManager.setCurrentProvider(defaultProvider);
 
+    // Initialize project context manager if enabled
+    const projectContextEnabled = config.get<boolean>('projectContext.enabled', true);
+    if (projectContextEnabled && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+        const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        projectContextManager = new ProjectContextManager(workspaceRoot);
+        projectContextManager.initialize().catch(err => {
+            console.error('Failed to initialize project context:', err);
+        });
+
+        // Initialize project context provider
+        projectContextProvider = new ProjectContextProvider(context.extensionUri, projectContextManager);
+    }
+
     // Check GitHub CLI availability
     checkGitHubCLI();
 
     // Initialize providers
-    chatProvider = new AiderChatProvider(context.extensionUri, aiderClient, providerManager);
+    chatProvider = new AiderChatProvider(context.extensionUri, aiderClient, providerManager, projectContextManager);
     filesProvider = new AiderFilesProvider(aiderClient);
     previewProvider = new AiderPreviewProvider(
         context.extensionUri,
@@ -80,6 +97,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('aider.previewView', previewProvider)
     );
+
+    // Register project context provider if available
+    if (projectContextProvider) {
+        context.subscriptions.push(
+            vscode.window.registerWebviewViewProvider('aider.projectContextView', projectContextProvider)
+        );
+    }
 
     // Register commands
     context.subscriptions.push(
@@ -197,6 +221,69 @@ export function activate(context: vscode.ExtensionContext) {
             if (clipboardText) {
                 chatProvider.pasteToInput(clipboardText);
             }
+        })
+    );
+
+    // Register screenshot commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.uploadScreenshot', async () => {
+            const uri = await vscode.window.showOpenDialog({
+                canSelectMany: false,
+                filters: {
+                    'Images': ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp']
+                },
+                title: 'Select Screenshot for Code Generation'
+            });
+
+            if (uri && uri[0]) {
+                try {
+                    const fileData = await vscode.workspace.fs.readFile(uri[0]);
+                    const base64 = Buffer.from(fileData).toString('base64');
+                    const mimeType = getMimeType(uri[0].fsPath);
+                    const dataUrl = `data:${mimeType};base64,${base64}`;
+                    
+                    await chatProvider.handleScreenshot({
+                        dataUrl,
+                        fileName: uri[0].fsPath.split('/').pop(),
+                        timestamp: Date.now()
+                    });
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to load screenshot: ${error}`);
+                }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.pasteScreenshot', async () => {
+            vscode.window.showInformationMessage('Please paste the screenshot directly in the chat panel or use the drag-and-drop area.');
+            await vscode.commands.executeCommand('workbench.view.extension.aider-sidebar');
+        })
+    );
+
+    // Register project context commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.viewProjectContext', async () => {
+            await vscode.commands.executeCommand('workbench.view.extension.aider-sidebar');
+            await vscode.commands.executeCommand('aider.projectContextView.focus');
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('aider.editProjectContext', async () => {
+            if (!projectContextManager) {
+                vscode.window.showWarningMessage('Project context is not enabled or no workspace is open');
+                return;
+            }
+
+            const context = projectContextManager.getContext();
+            if (!context) {
+                vscode.window.showErrorMessage('Failed to load project context');
+                return;
+            }
+
+            // Open project context view
+            await vscode.commands.executeCommand('aider.viewProjectContext');
         })
     );
 
@@ -508,6 +595,19 @@ async function checkGitHubCLI() {
             }
         }
     }
+}
+
+function getMimeType(filePath: string): string {
+    const ext = filePath.toLowerCase().split('.').pop();
+    const mimeTypes: Record<string, string> = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp',
+        'webp': 'image/webp'
+    };
+    return mimeTypes[ext || ''] || 'image/png';
 }
 
 export function deactivate() {

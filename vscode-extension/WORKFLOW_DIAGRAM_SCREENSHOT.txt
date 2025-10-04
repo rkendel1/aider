@@ -1,0 +1,360 @@
+# Screenshot-to-Code & Project Context Workflow
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     VS Code Extension UI                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│  │ Chat Panel   │  │ Preview      │  │ Context      │         │
+│  │ - Screenshot │  │ Panel        │  │ Panel        │         │
+│  │ - Upload     │  │ - Inspector  │  │ - Rules      │         │
+│  │ - Paste      │  │ - Live App   │  │ - Principles │         │
+│  └──────┬───────┘  └──────────────┘  └──────┬───────┘         │
+│         │                                    │                 │
+└─────────┼────────────────────────────────────┼─────────────────┘
+          │                                    │
+          ▼                                    ▼
+┌─────────────────────┐            ┌─────────────────────┐
+│ Screenshot Service  │            │ Project Context     │
+│                     │            │ Manager             │
+│ - Validate image    │            │                     │
+│ - Extract metadata  │            │ - Load context      │
+│ - Build AI prompt   │            │ - Save context      │
+└─────────┬───────────┘            │ - Validate rules    │
+          │                        │ - Format for AI     │
+          │                        └──────────┬──────────┘
+          │                                   │
+          │          ┌────────────────────────┘
+          │          │
+          ▼          ▼
+┌─────────────────────────────────┐
+│      AI Provider Manager        │
+│                                 │
+│  ┌──────┐  ┌──────┐  ┌──────┐  │
+│  │Ollama│  │Copilot│ │Default│ │
+│  └──┬───┘  └───┬──┘  └───┬───┘  │
+│     │          │         │      │
+└─────┼──────────┼─────────┼──────┘
+      │          │         │
+      └──────────┴─────────┘
+                 │
+                 ▼
+        ┌────────────────┐
+        │  AI Analysis   │
+        │                │
+        │ - Screenshot   │
+        │ - Context      │
+        │ - Generate     │
+        └────────┬───────┘
+                 │
+                 ▼
+        ┌────────────────┐
+        │ Code Generator │
+        │                │
+        │ - React/Next   │
+        │ - TypeScript   │
+        │ - Tailwind     │
+        └────────┬───────┘
+                 │
+                 ▼
+        ┌────────────────┐
+        │ Rule Validator │
+        │                │
+        │ - Check rules  │
+        │ - Warnings     │
+        └────────┬───────┘
+                 │
+                 ▼
+        ┌────────────────┐
+        │ File Creator   │
+        │                │
+        │ - src/comp...  │
+        │ - Auto open    │
+        └────────────────┘
+```
+
+## Screenshot-to-Code Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Step 1: User Action                                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────┐     ┌──────────┐     ┌──────────┐           │
+│  │  Drag &  │     │  Paste   │     │  Browse  │           │
+│  │   Drop   │  OR │ Ctrl+V   │  OR │   File   │           │
+│  └──────────┘     └──────────┘     └──────────┘           │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 2: Screenshot Validation                               │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ✓ Check format (PNG, JPG, etc.)                           │
+│  ✓ Verify size (<10MB)                                     │
+│  ✓ Validate data URL                                       │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 3: Context Loading                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Load from: .aider/project-context.json                     │
+│                                                             │
+│  - Framework: "Next.js 14"                                  │
+│  - Rules: ["Use TypeScript", "Tailwind CSS"]               │
+│  - Principles: ["Mobile-first", "WCAG AA"]                 │
+│  - Patterns: { "API": "Custom hooks" }                     │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 4: Build AI Prompt                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  "Analyze this screenshot and generate code.               │
+│                                                             │
+│   PROJECT CONTEXT:                                          │
+│   Framework: Next.js 14                                     │
+│   Rules:                                                    │
+│   - Use TypeScript                                          │
+│   - Use Tailwind CSS                                        │
+│   Design Principles:                                        │
+│   - Mobile-first responsive design                          │
+│                                                             │
+│   Requirements:                                             │
+│   - Generate production-ready component                     │
+│   - Follow project context rules                            │
+│   - Use modern best practices                               │
+│                                                             │
+│   [Screenshot data URL...]"                                 │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 5: AI Processing                                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Provider: GitHub Copilot (or Ollama/Default)              │
+│                                                             │
+│  AI analyzes:                                               │
+│  1. Screenshot visual elements                              │
+│  2. Layout and structure                                    │
+│  3. Styling and colors                                      │
+│  4. Interactive elements                                    │
+│  5. Project context constraints                             │
+│                                                             │
+│  AI generates:                                              │
+│  - TypeScript component code                                │
+│  - Tailwind CSS classes                                     │
+│  - Proper imports                                           │
+│  - Responsive design                                        │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 6: Code Extraction                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Extract from response:                                     │
+│  - Code blocks (```typescript ... ```)                      │
+│  - Determine file name                                      │
+│  - Identify language                                        │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 7: Rule Validation                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Check generated code against rules:                        │
+│  ✓ Uses TypeScript                                          │
+│  ✓ No inline styles                                         │
+│  ✓ Tailwind CSS classes                                     │
+│                                                             │
+│  If violations found → Show warnings                        │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 8: File Creation                                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. Create directory: src/components/                       │
+│  2. Write file: MyComponent.tsx                             │
+│  3. Add to Aider chat context                               │
+│  4. Open in editor (Column 2)                               │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 9: User Review                                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  User can:                                                  │
+│  - Review generated code                                    │
+│  - Test component                                           │
+│  - Use Aider chat to refine                                │
+│  - Make manual edits                                        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Project Context Management
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    User Interface                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────┐           │
+│  │ Project Context Panel                       │           │
+│  ├─────────────────────────────────────────────┤           │
+│  │                                             │           │
+│  │ Framework: [Next.js 14          ] [Update] │           │
+│  │                                             │           │
+│  │ Rules:                                      │           │
+│  │ • Use TypeScript            [Remove]        │           │
+│  │ • No inline styles          [Remove]        │           │
+│  │ [Add new rule...]                           │           │
+│  │                                             │           │
+│  │ Design Principles:                          │           │
+│  │ • Mobile-first design       [Remove]        │           │
+│  │ • WCAG 2.1 AA               [Remove]        │           │
+│  │ [Add principle...]                          │           │
+│  │                                             │           │
+│  │ Goals:                                      │           │
+│  │ • Build MVP by Q2           [Remove]        │           │
+│  │ [Add goal...]                               │           │
+│  │                                             │           │
+│  │ Coding Patterns:                            │           │
+│  │ • API Calls: Use hooks      [Remove]        │           │
+│  │ [Add pattern...]                            │           │
+│  │                                             │           │
+│  └─────────────────────────────────────────────┘           │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              │ Auto-save on change
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Storage Layer                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  File: .aider/project-context.json                          │
+│                                                             │
+│  {                                                          │
+│    "framework": "Next.js 14",                               │
+│    "rules": [                                               │
+│      "Use TypeScript",                                      │
+│      "No inline styles"                                     │
+│    ],                                                       │
+│    "designPrinciples": [                                    │
+│      "Mobile-first design",                                 │
+│      "WCAG 2.1 AA"                                          │
+│    ],                                                       │
+│    "goals": [                                               │
+│      "Build MVP by Q2"                                      │
+│    ],                                                       │
+│    "codingPatterns": {                                      │
+│      "API Calls": "Use custom hooks"                        │
+│    },                                                       │
+│    "lastUpdated": "2024-01-15T10:30:00.000Z"                │
+│  }                                                          │
+│                                                             │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              │ Used by AI
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  AI Code Generation                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Context automatically included in:                         │
+│  - Screenshot analysis prompts                              │
+│  - Chat message prompts                                     │
+│  - Code generation requests                                 │
+│                                                             │
+│  AI uses context to:                                        │
+│  - Follow project rules                                     │
+│  - Apply design principles                                  │
+│  - Use established patterns                                 │
+│  - Generate framework-specific code                         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow
+
+```
+Screenshot → Validation → Context Loading → Prompt Building
+    ↓
+AI Analysis → Code Generation → Rule Validation
+    ↓
+File Creation → Auto Open → User Review
+    ↓
+Refinement (via Aider Chat) → Iteration
+```
+
+## Component Interaction
+
+```
+┌──────────────────┐
+│  User Actions    │
+│  - Upload        │
+│  - Paste         │
+│  - Edit Context  │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐     ┌──────────────────┐
+│  UI Components   │────▶│  Services        │
+│  - Chat Panel    │     │  - Screenshot    │
+│  - Context Panel │     │  - Context Mgr   │
+└──────────────────┘     └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │  AI Provider     │
+                         │  Manager         │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │  File System     │
+                         │  - Create files  │
+                         │  - Save context  │
+                         └──────────────────┘
+```
+
+## Key Features
+
+1. **Screenshot Upload**: Multiple input methods (drag-drop, paste, browse)
+2. **Context Integration**: Automatic loading and application
+3. **AI Processing**: Intelligent code generation with context awareness
+4. **Validation**: Rule checking before file creation
+5. **Auto-Creation**: Automatic file creation and opening
+6. **Feedback Loop**: User can refine via chat
+
+## Benefits
+
+- ✅ **Speed**: Generate code in seconds
+- ✅ **Consistency**: AI follows project rules automatically
+- ✅ **Quality**: Pre-validated against standards
+- ✅ **Team Alignment**: Shared context via git
+- ✅ **Visual Workflow**: Screenshot-first development

@@ -41,7 +41,11 @@ suite('Extension Test Suite', () => {
             'aider.undoChanges',
             'aider.showDiff',
             'aider.setPreviewUrl',
-            'aider.pasteToChat'
+            'aider.pasteToChat',
+            'aider.uploadScreenshot',
+            'aider.pasteScreenshot',
+            'aider.viewProjectContext',
+            'aider.editProjectContext'
         ];
 
         for (const cmd of aiderCommands) {

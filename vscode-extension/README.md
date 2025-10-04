@@ -5,6 +5,22 @@ AI pair programming with Aider directly in VS Code. This extension enables seaml
 ## Features
 
 - **Visual-First Workflow**: Full-page app preview as the primary view with Aider sidebar for quick access
+- **Screenshot-to-Code Generation**: Upload or paste screenshots to automatically generate React/Next.js components
+  - Drag-and-drop support for images
+  - Clipboard integration for quick screenshot pasting
+  - AI-powered analysis using Ollama or GitHub Copilot
+  - Automatic file creation and code preview
+- **Project-Level Context Storage**: Store and manage project-specific rules, design principles, goals, and coding patterns
+  - Define coding standards and constraints
+  - Set design principles and guidelines
+  - Track project goals and objectives
+  - Create reusable coding patterns
+  - Persistent storage in `.aider/project-context.json`
+- **Context-Aware Suggestions**: AI incorporates your project context in all code generation
+  - Validates against project rules
+  - Follows design principles
+  - Uses established coding patterns
+  - Aligns with project goals
 - **Real-time Chat**: Interact with Aider through a built-in chat interface
 - **Multi-AI Provider Support**: Choose between Default, Ollama, and GitHub Copilot
   - **Ollama**: Fast, local AI models for lightweight tasks
@@ -111,6 +127,56 @@ For detailed instructions, see [LIVE_PREVIEW_GUIDE.md](LIVE_PREVIEW_GUIDE.md).
 
 **New Visual-First Workflow**: See [VISUAL_WORKFLOW_GUIDE.md](VISUAL_WORKFLOW_GUIDE.md) for the complete guide to using the full-page preview panel and bidirectional communication features. Also check [QUICK_REFERENCE_VISUAL.md](QUICK_REFERENCE_VISUAL.md) for a quick start guide.
 
+### Screenshot-to-Code Generation
+
+Transform UI screenshots into production-ready code:
+
+1. **Open Aider Chat Panel** in the sidebar
+2. **Upload a Screenshot** using one of these methods:
+   - **Drag and Drop**: Drag an image file into the screenshot area
+   - **Paste from Clipboard**: Copy a screenshot and press Ctrl+V (Cmd+V on Mac)
+   - **File Browser**: Run "Aider: Upload Screenshot for Code Generation" command
+3. **Click "Generate Code"** 
+4. The AI analyzes the screenshot and generates corresponding React/Next.js code
+5. Generated file is automatically created in `src/components/` and opened
+6. Review the code and make any refinements using Aider chat
+
+**Features:**
+- Uses your project context (rules, design principles) to generate compliant code
+- Validates against project rules and warns of violations
+- Supports all image formats (PNG, JPG, WEBP, etc.)
+- Choose AI provider for analysis (Ollama or Copilot recommended)
+
+For detailed instructions, see [SCREENSHOT_CONTEXT_GUIDE.md](SCREENSHOT_CONTEXT_GUIDE.md).
+
+### Project Context Management
+
+Define and manage project-specific rules, design principles, and patterns:
+
+1. **Open Project Context Panel**: Run "Aider: View Project Context" command
+2. **Add Your Project Context**:
+   - Set framework (e.g., "Next.js 14", "React 18")
+   - Add rules (e.g., "Use TypeScript", "No inline styles")
+   - Define design principles (e.g., "Mobile-first", "WCAG 2.1 AA")
+   - Set project goals (e.g., "Build MVP by Q2")
+   - Create coding patterns (e.g., "API calls use custom hooks")
+3. **Context is automatically applied** to all AI code generation
+4. **Edit anytime** by clicking items or running "Aider: Edit Project Context"
+
+**Storage:**
+- Context saved in `.aider/project-context.json`
+- Automatically created on first use
+- Can be committed to version control for team sharing
+- Updates persist automatically
+
+**Benefits:**
+- AI generates code that follows your standards
+- Consistent code style across the project
+- Reduces manual code review for style issues
+- Easy onboarding for new team members
+
+For detailed instructions, see [SCREENSHOT_CONTEXT_GUIDE.md](SCREENSHOT_CONTEXT_GUIDE.md).
+
 ### Undoing Changes
 
 Click "Undo" in the notification, or run "Aider: Undo Last Changes" from the command palette.
@@ -132,6 +198,17 @@ Access settings via File > Preferences > Settings, then search for "Aider":
 - `aider.aiProvider.default`: Default provider (`default`, `ollama`, `copilot`)
 - `aider.aiProvider.autoSelect`: Automatically choose provider based on task complexity
 - `aider.aiProvider.ollama.enabled`: Enable Ollama provider
+- `aider.aiProvider.ollama.endpoint`: Ollama API endpoint (default: `http://localhost:11434`)
+- `aider.aiProvider.ollama.model`: Ollama model to use (default: `llama2`)
+- `aider.aiProvider.copilot.enabled`: Enable GitHub Copilot provider
+
+### Screenshot & Context Settings
+- `aider.screenshot.enabled`: Enable screenshot-to-code generation (default: `true`)
+- `aider.screenshot.defaultProvider`: AI provider for screenshot analysis (`default`, `ollama`, `copilot`)
+- `aider.projectContext.enabled`: Enable project-level context storage (default: `true`)
+- `aider.projectContext.autoUpdate`: Automatically update project context (default: `true`)
+
+### GitHub Integration Settings
 - `aider.aiProvider.ollama.endpoint`: Ollama API endpoint (default: `http://localhost:11434`)
 - `aider.aiProvider.ollama.model`: Ollama model to use (e.g., `llama2`, `codellama`)
 - `aider.aiProvider.copilot.enabled`: Enable GitHub Copilot provider
