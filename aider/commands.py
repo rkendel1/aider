@@ -1661,6 +1661,94 @@ Just show me the edits I need to make.
         except Exception as e:
             self.io.tool_error(f"An unexpected error occurred while copying to clipboard: {str(e)}")
 
+    def cmd_clone_repo(self, args):
+        """Clone a GitHub repository to a specified directory"""
+        import re
+        
+        # Parse the arguments
+        args = args.strip()
+        if not args:
+            self.io.tool_error("Please provide a GitHub repository URL.")
+            self.io.tool_output("Usage: /clone-repo <github-url> [target-directory]")
+            return
+        
+        # Split args into URL and optional target directory
+        parts = args.split(None, 1)
+        repo_url = parts[0]
+        target_dir = parts[1] if len(parts) > 1 else None
+        
+        # Validate GitHub URL
+        github_pattern = r'^https?://github\.com/[\w\-]+/[\w\-\.]+(?:\.git)?$|^git@github\.com:[\w\-]+/[\w\-\.]+(?:\.git)?$'
+        if not re.match(github_pattern, repo_url):
+            self.io.tool_error(f"Invalid GitHub repository URL: {repo_url}")
+            self.io.tool_output("Expected format: https://github.com/owner/repo or git@github.com:owner/repo")
+            return
+        
+        # Extract repository name from URL for default directory name
+        repo_name_match = re.search(r'/([^/]+?)(\.git)?$', repo_url)
+        if not repo_name_match:
+            repo_name_match = re.search(r':([^/]+?)(\.git)?$', repo_url)
+        
+        if not repo_name_match:
+            self.io.tool_error("Could not extract repository name from URL")
+            return
+        
+        default_repo_name = repo_name_match.group(1)
+        
+        # If no target directory specified, ask user or use default
+        if not target_dir:
+            suggested_dir = str(Path.cwd() / default_repo_name)
+            if self.io.confirm_ask(
+                f"Clone to {suggested_dir}?",
+                default="yes"
+            ):
+                target_dir = suggested_dir
+            else:
+                self.io.tool_output("Clone cancelled. You can specify a directory: /clone-repo <url> <directory>")
+                return
+        
+        # Convert to absolute path
+        target_path = Path(target_dir).expanduser().resolve()
+        
+        # Check if target directory already exists
+        if target_path.exists():
+            if not target_path.is_dir():
+                self.io.tool_error(f"{target_path} exists and is not a directory")
+                return
+            
+            # Check if directory is empty
+            if any(target_path.iterdir()):
+                self.io.tool_error(f"Directory {target_path} already exists and is not empty")
+                return
+        
+        # Clone the repository
+        self.io.tool_output(f"Cloning {repo_url} to {target_path}...")
+        
+        try:
+            # Use git command directly for better compatibility and progress output
+            result = subprocess.run(
+                ["git", "clone", repo_url, str(target_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding=self.io.encoding,
+                errors="replace",
+            )
+            
+            if result.returncode == 0:
+                self.io.tool_output(f"Successfully cloned repository to {target_path}")
+                self.io.tool_output(result.stdout)
+            else:
+                self.io.tool_error(f"Failed to clone repository")
+                self.io.tool_output(result.stdout)
+                
+        except FileNotFoundError:
+            self.io.tool_error("Git command not found. Please ensure Git is installed.")
+        except subprocess.SubprocessError as e:
+            self.io.tool_error(f"Error running git clone: {e}")
+        except Exception as e:
+            self.io.tool_error(f"Unexpected error while cloning repository: {e}")
+
 
 def expand_subdir(file_path):
     if file_path.is_file():
