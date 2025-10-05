@@ -59,6 +59,10 @@ COPY --chown=coder:coder docker/start_aider_api_docker.py /usr/local/bin/start_a
 COPY --chown=coder:coder docker/preload-vision-model.sh /usr/local/bin/preload-vision-model.sh
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy pre-built VS Code extension (should be built before docker build)
+# Build it with: cd vscode-extension && npm install && npm run compile && npm run package
+COPY --chown=coder:coder vscode-extension/aider-vscode-*.vsix /tmp/aider-vscode.vsix
+
 # Install Python deps
 RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
     /venv/bin/python -m pip install --no-cache-dir \
@@ -70,9 +74,10 @@ RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
 
 USER coder
 
-# Configure code-server
-RUN mkdir -p /home/coder/.config/code-server && \
-    printf "bind-addr: 0.0.0.0:8443\nauth: password\ncert: false\n" > /home/coder/.config/code-server/config.yaml
+# Configure code-server and install extension
+RUN mkdir -p /home/coder/.config/code-server /home/coder/.local/share/code-server/extensions && \
+    printf "bind-addr: 0.0.0.0:8443\nauth: password\ncert: false\n" > /home/coder/.config/code-server/config.yaml && \
+    code-server --install-extension /tmp/aider-vscode.vsix
 
 EXPOSE 8443 5000 11434
 
