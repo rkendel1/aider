@@ -46,11 +46,20 @@ This Docker setup provides a complete development environment with:
 
 ```bash
 cd docker
-docker-compose up -d
+docker compose up -d --build
+```
+
+**Note**: The first build will take longer as it needs to build the VS Code extension and Docker images. The extension is built automatically as part of the process.
+
+If you prefer to use the Makefile:
+```bash
+make build    # Builds extension and Docker images
+make up       # Starts all services
 ```
 
 This will:
-- Build the aider+code-server container
+- Build the VS Code extension from source
+- Build the aider+code-server container with the extension pre-installed
 - Start Supabase services (PostgreSQL, Auth, REST API, Realtime, Storage)
 - Create persistent volumes for data storage
 - Start both code-server and aider API server
@@ -89,6 +98,38 @@ Once code-server is running:
 docker exec -it docker-code-server-1 code-server --list-extensions
 ```
 You should see `aider.aider-vscode` in the output.
+
+## Building from Source
+
+The VS Code extension is built as part of the Docker image build process. The workflow is:
+
+1. **Extension is built outside Docker** (in your host environment):
+   ```bash
+   cd vscode-extension
+   npm install
+   npm run compile
+   npm run package
+   ```
+   This creates `aider-vscode-0.1.0.vsix`
+
+2. **Docker build copies and installs the .vsix**:
+   ```bash
+   cd docker
+   docker compose build
+   ```
+
+**Automated Build**: The Makefile automates this for you:
+```bash
+make build    # Runs build-extension.sh, then docker compose build
+make up       # Starts all services
+```
+
+**Manual Build**: If you prefer to build manually:
+```bash
+./build-extension.sh    # Builds the VS Code extension
+docker compose build    # Builds Docker images with the extension
+docker compose up -d    # Starts services
+```
 
 ## Architecture
 

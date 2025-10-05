@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs clean ps health
+.PHONY: help build build-extension build-no-cache up down restart logs clean ps health
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -6,10 +6,13 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-build: ## Build the Docker images
+build-extension: ## Build the VS Code extension first
+	./build-extension.sh
+
+build: build-extension ## Build the Docker images (includes building the extension)
 	docker compose build
 
-build-no-cache: ## Build the Docker images without cache (for clean rebuild)
+build-no-cache: build-extension ## Build the Docker images without cache (for clean rebuild)
 	docker compose build --no-cache
 
 up: ## Start all services

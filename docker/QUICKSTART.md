@@ -43,12 +43,18 @@ OPENAI_API_KEY=sk-your-actual-api-key-here
 ### 4. Start Everything
 
 ```bash
-docker compose up -d
+docker compose up -d --build
+```
+
+**OR** use the Makefile for convenience:
+```bash
+make build && make up
 ```
 
 This will take a few minutes the first time as it:
+- Builds the VS Code extension from source
 - Downloads required images
-- Builds the VS Code extension
+- Builds the custom code-server image
 - Installs the Aider extension in code-server
 - Starts all services
 
