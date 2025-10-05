@@ -76,6 +76,23 @@ mkdir -p "$SUPERVISOR_DIR"
 touch "$SUPERVISOR_DIR/supervisord.log"
 chown -R coder:coder "$SUPERVISOR_DIR"
 
+# Configure Aider VS Code extension settings
+log "Configuring Aider VS Code extension..."
+CODE_SERVER_USER_SETTINGS="/home/coder/.local/share/code-server/User"
+mkdir -p "$CODE_SERVER_USER_SETTINGS"
+cat > "$CODE_SERVER_USER_SETTINGS/settings.json" <<EOF
+{
+  "aider.apiEndpoint": "http://localhost:5000",
+  "aider.autoCommit": true,
+  "aider.showDiffs": true,
+  "aider.previewUrl": "http://localhost:3000",
+  "aider.enableInspector": true,
+  "aider.autoOpenPreview": false
+}
+EOF
+chown -R coder:coder "$CODE_SERVER_USER_SETTINGS"
+log "Extension settings configured at $CODE_SERVER_USER_SETTINGS/settings.json"
+
 # Install local aider package and dependencies at runtime
 if [ -d "/tmp/aider" ]; then
     log "Installing local aider package..."

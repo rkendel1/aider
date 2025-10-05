@@ -48,6 +48,22 @@ ENV PATH="/venv/bin:$PATH" \
     OLLAMA_VISION_MODEL=llama3.2-vision
 
 #########################
+FROM base AS builder
+
+# Install Node.js for building the extension
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy source and build VS Code extension
+COPY --chown=coder:coder vscode-extension /tmp/vscode-extension
+WORKDIR /tmp/vscode-extension
+RUN npm install && \
+    npm run compile && \
+    npm run package && \
+    ls -lh aider-vscode-*.vsix
+
+#########################
 FROM base AS aider-vscode
 
 ENV AIDER_DOCKER_IMAGE=aider-vscode
@@ -58,6 +74,9 @@ COPY --chown=coder:coder docker/start-services.sh /usr/local/bin/start-services.
 COPY --chown=coder:coder docker/start_aider_api_docker.py /usr/local/bin/start_aider_api.py
 COPY --chown=coder:coder docker/preload-vision-model.sh /usr/local/bin/preload-vision-model.sh
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy built extension from builder stage
+COPY --from=builder --chown=coder:coder /tmp/vscode-extension/aider-vscode-*.vsix /tmp/aider-vscode.vsix
 
 # Install Python deps
 RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
@@ -70,9 +89,10 @@ RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
 
 USER coder
 
-# Configure code-server
-RUN mkdir -p /home/coder/.config/code-server && \
-    printf "bind-addr: 0.0.0.0:8443\nauth: password\ncert: false\n" > /home/coder/.config/code-server/config.yaml
+# Configure code-server and install extension
+RUN mkdir -p /home/coder/.config/code-server /home/coder/.local/share/code-server/extensions && \
+    printf "bind-addr: 0.0.0.0:8443\nauth: password\ncert: false\n" > /home/coder/.config/code-server/config.yaml && \
+    code-server --install-extension /tmp/aider-vscode.vsix
 
 EXPOSE 8443 5000 11434
 

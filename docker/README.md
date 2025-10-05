@@ -75,19 +75,20 @@ Once code-server is running:
    - Your project files should be in the `/workspace` directory
    - You can mount your local project: See "Custom Project Mount" below
 
-2. **Install the Aider extension** (if not auto-installed):
-   - Open Extensions (Ctrl+Shift+X)
-   - Search for "Aider"
-   - Click Install
+2. **The Aider extension is pre-installed**:
+   - The extension is automatically built and installed during the Docker image build
+   - It's pre-configured to connect to `http://localhost:5000`
+   - No manual installation or configuration needed!
 
-3. **Configure the Aider extension**:
-   - Open Settings (Ctrl+,)
-   - Search for "Aider"
-   - Set `aider.apiEndpoint` to `http://localhost:5000`
-
-4. **Start using Aider**:
-   - Click the Aider icon in the Activity Bar
+3. **Start using Aider**:
+   - Click the Aider icon in the Activity Bar (left sidebar)
    - Start chatting with Aider!
+
+**Note**: If you need to verify the extension is installed:
+```bash
+docker exec -it docker-code-server-1 code-server --list-extensions
+```
+You should see `aider.aider-vscode` in the output.
 
 ## Architecture
 

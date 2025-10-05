@@ -7,22 +7,25 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 build: ## Build the Docker images
-	docker-compose build
+	docker compose build
+
+build-no-cache: ## Build the Docker images without cache (for clean rebuild)
+	docker compose build --no-cache
 
 up: ## Start all services
-	docker-compose up -d
+	docker compose up -d
 
 down: ## Stop all services
-	docker-compose down
+	docker compose down
 
 restart: ## Restart all services
-	docker-compose restart
+	docker compose restart
 
 logs: ## View logs (use 'make logs SERVICE=code-server' for specific service)
 	@if [ -z "$(SERVICE)" ]; then \
-		docker-compose logs -f; \
+		docker compose logs -f; \
 	else \
-		docker-compose logs -f $(SERVICE); \
+		docker compose logs -f $(SERVICE); \
 	fi
 
 clean: ## Stop and remove all containers, networks, and volumes (WARNING: deletes data!)
@@ -30,14 +33,14 @@ clean: ## Stop and remove all containers, networks, and volumes (WARNING: delete
 	@read -p "Are you sure? [y/N] " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		docker-compose down -v; \
+		docker compose down -v; \
 		echo "All containers, networks, and volumes removed."; \
 	else \
 		echo "Cancelled."; \
 	fi
 
 ps: ## Show running containers
-	docker-compose ps
+	docker compose ps
 
 health: ## Check health of all services
 	@echo "Checking service health..."
