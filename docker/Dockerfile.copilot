@@ -63,12 +63,13 @@ FROM base AS code-server-aider
 
 ENV AIDER_DOCKER_IMAGE=code-server-aider
 
-# Copy Aider source code into the container
+# Copy Aider source code into the container  
 COPY --chown=coder:coder . /workspace/aider
 
 # Copy configuration files
 COPY --chown=coder:coder docker/copilot-integration/start.sh /usr/local/bin/start.sh
 COPY --chown=coder:coder docker/copilot-integration/settings.json /tmp/settings.json
+COPY --chown=coder:coder docker/copilot-integration/extension-hooks/integration-config.json /tmp/integration-config.json
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Install Python dependencies
@@ -90,10 +91,11 @@ RUN mkdir -p /home/coder/.config/code-server /home/coder/.local/share/code-serve
 # Pre-install GitHub Copilot extension (will be downloaded on first start if not available)
 # The extension will be installed at runtime via the start.sh script
 
-# Copy workspace settings
-RUN mkdir -p /workspace/.vscode && \
+# Copy workspace settings and integration config
+RUN mkdir -p /workspace/.vscode /home/coder/.config/copilot-aider && \
     cp /tmp/settings.json /workspace/.vscode/settings.json && \
-    chown -R coder:coder /workspace/.vscode
+    cp /tmp/integration-config.json /home/coder/.config/copilot-aider/integration.json && \
+    chown -R coder:coder /workspace/.vscode /home/coder/.config/copilot-aider
 
 EXPOSE 8080 5000 11434
 
