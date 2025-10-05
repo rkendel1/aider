@@ -45,8 +45,8 @@ The Aider VS Code extension enables seamless interaction with the Aider AI pair 
 - **[Project Context](features/project-context.md)** - Project-level context storage
 
 ### Examples
-- **[Examples Directory](../../../vscode-extension/examples/)** - Code examples and demos
-- **[Testing Guide](../../../vscode-extension/examples/TESTING_GUIDE.md)** - Testing procedures
+- **[Examples Directory](../../vscode-extension/examples/)** - Code examples and demos
+- **[Testing Guide](../../vscode-extension/examples/TESTING_GUIDE.md)** - Testing procedures
 
 ## Documentation Structure
 
@@ -55,23 +55,15 @@ docs/vscode-extension/
 ├── README.md                       # This file - overview and navigation
 ├── setup/
 │   ├── installation.md            # Installation guide
-│   ├── quickstart.md              # 5-minute quick start
-│   └── configuration.md           # Configuration options
+│   └── quickstart.md              # 5-minute quick start
 ├── usage/
-│   ├── getting-started.md         # Basic usage guide
-│   ├── chat-interface.md          # Using the chat
-│   ├── file-management.md         # Managing files
-│   └── workflows.md               # Common workflows
-├── features/
-│   ├── ai-providers.md            # Multi-provider AI
-│   ├── live-preview.md            # Live preview feature
-│   ├── vision-models.md           # Screenshot-to-code
-│   ├── github-integration.md      # GitHub features
-│   └── project-context.md         # Project context
-└── development/
-    ├── architecture.md            # Extension architecture
-    ├── contributing.md            # Development guide
-    └── changelog.md               # Version history
+│   └── getting-started.md         # Basic usage guide
+└── features/
+    ├── ai-providers.md            # Multi-provider AI
+    ├── live-preview.md            # Live preview feature
+    ├── vision-models.md           # Screenshot-to-code
+    ├── github-integration.md      # GitHub features
+    └── project-context.md         # Project context
 ```
 
 ## Getting Started
@@ -84,9 +76,7 @@ docs/vscode-extension/
 
 ### For Developers
 
-1. **[Clone and build](development/contributing.md)** - Set up development environment
-2. **[Review architecture](development/architecture.md)** - Understand the design
-3. **[Make changes](development/contributing.md)** - Contribute improvements
+See the main repository [Contributing Guide](../../CONTRIBUTING.md) for development setup and guidelines.
 
 ## Features
 
@@ -186,11 +176,13 @@ Learn more: [Getting Started Guide](usage/getting-started.md)
 
 ## Contributing
 
-We welcome contributions! See the [Contributing Guide](development/contributing.md) for:
+We welcome contributions! See the [Contributing Guide](../../CONTRIBUTING.md) for:
 - Development setup
 - Code standards
 - Testing procedures
 - Pull request process
+
+Also see the [VS Code Extension Documentation](../../vscode-extension/README.md) in the main repository.
 
 ## License
 
@@ -199,6 +191,6 @@ Apache-2.0 (same as Aider main project)
 ---
 
 **Quick Navigation:**
-[Setup](setup/) | [Usage](usage/) | [Features](features/) | [Development](development/) | [Examples](../../../vscode-extension/examples/)
+[Setup](setup/) | [Usage](usage/) | [Features](features/) | [Examples](../../vscode-extension/examples/)
 
 *For the main Aider documentation, visit [aider.chat/docs](https://aider.chat/docs)*

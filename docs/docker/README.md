@@ -138,9 +138,9 @@ make rebuild
 
 ### 5. Next Steps
 
-- **[Read the full setup guide](setup.md)** - Detailed configuration
-- **[Try the examples](examples.md)** - See what you can build
-- **[Explore optimizations](optimizations.md)** - Improve performance
+- **[Explore VS Code Extension features](../vscode-extension/README.md)** - Learn about the extension
+- **[Review main documentation](../README.md)** - Complete documentation hub
+- **[Check Docker files](../../docker/)** - Source configuration and scripts
 
 ## Documentation
 
