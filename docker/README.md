@@ -1,5 +1,10 @@
 # Aider with Code-Server, Supabase, and Caching
 
+> **🆕 NEW: GitHub Copilot Integration Available!**  
+> Check out [`copilot-integration/`](copilot-integration/) for a turnkey Docker solution that integrates GitHub Copilot with Aider.  
+> **Features:** Pre-installed Copilot, multi-file reasoning, one-command deployment.  
+> **Quick Start:** `./copilot-integration/run.sh run`
+
 This Docker setup provides a complete development environment with:
 - **Code-Server**: VS Code in your browser
 - **Aider API**: AI pair programming backend
