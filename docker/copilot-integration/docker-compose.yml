@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  code-server-aider:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.copilot
+    image: code-server-aider:latest
+    container_name: code-server-aider
+    ports:
+      - "8080:8080"  # Code Server
+      - "5000:5000"  # Aider API
+      - "11434:11434"  # Ollama (optional)
+    volumes:
+      - ../../workspace:/workspace
+      - aider-cache:/home/coder/.aider
+      - code-server-config:/home/coder/.config/code-server
+      - copilot-config:/home/coder/.config/copilot-aider
+    environment:
+      # API Keys (set these in .env file)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      
+      # Code Server
+      - PASSWORD=${PASSWORD:-aider}
+      
+      # Aider Configuration
+      - AIDER_CACHE_DIR=${AIDER_CACHE_DIR:-/home/coder/.aider/cache}
+      
+      # Supabase (optional)
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_KEY=${SUPABASE_KEY:-}
+      
+      # GitHub
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      
+      # Ollama (optional)
+      - OLLAMA_HOST=${OLLAMA_HOST:-0.0.0.0:11434}
+      - OLLAMA_MODELS=${OLLAMA_MODELS:-/home/coder/.ollama/models}
+      - OLLAMA_VISION_MODEL=${OLLAMA_VISION_MODEL:-llama3.2-vision}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  aider-cache:
+    driver: local
+  code-server-config:
+    driver: local
+  copilot-config:
+    driver: local

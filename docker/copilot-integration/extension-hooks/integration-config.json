@@ -1,0 +1,83 @@
+{
+  "version": "1.0.0",
+  "integration": {
+    "name": "copilot-aider-bridge",
+    "description": "Integration layer for GitHub Copilot and Aider",
+    "mode": "copilot+aider",
+    "enabled": true
+  },
+  "endpoints": {
+    "aiderApi": "http://localhost:5000",
+    "copilotProxy": "http://localhost:5000/copilot-proxy",
+    "healthCheck": "http://localhost:5000/api/health"
+  },
+  "features": {
+    "multiFileReasoning": true,
+    "contextSharing": true,
+    "proxyRequests": false,
+    "autoSelectProvider": true,
+    "cacheContext": true
+  },
+  "providers": {
+    "copilot": {
+      "enabled": true,
+      "priority": 1,
+      "useFor": ["inline-completion", "chat", "quick-fixes"]
+    },
+    "aider": {
+      "enabled": true,
+      "priority": 2,
+      "useFor": ["refactoring", "multi-file-edit", "architecture"]
+    }
+  },
+  "routing": {
+    "rules": [
+      {
+        "pattern": "simple completion",
+        "provider": "copilot",
+        "description": "Single-line completions go to Copilot"
+      },
+      {
+        "pattern": "multi-file refactor",
+        "provider": "aider",
+        "description": "Complex refactoring goes to Aider"
+      },
+      {
+        "pattern": "auto",
+        "provider": "auto-select",
+        "description": "Automatically choose based on query complexity"
+      }
+    ]
+  },
+  "contextSharing": {
+    "enabled": true,
+    "shareOpenFiles": true,
+    "shareProjectStructure": true,
+    "shareChatHistory": false,
+    "maxContextSize": 100000,
+    "cacheTimeout": 300
+  },
+  "performance": {
+    "cacheEnabled": true,
+    "cacheTTL": 300,
+    "maxConcurrentRequests": 5,
+    "requestTimeout": 30000,
+    "retryAttempts": 3
+  },
+  "security": {
+    "allowedHosts": ["localhost", "127.0.0.1"],
+    "requireAuthentication": false,
+    "maxRequestSize": 1048576,
+    "rateLimiting": {
+      "enabled": false,
+      "maxRequestsPerMinute": 60
+    }
+  },
+  "logging": {
+    "level": "info",
+    "enableDebug": false,
+    "logFile": "/home/coder/.config/copilot-aider/integration.log",
+    "logRequests": true,
+    "logResponses": false
+  }
+}

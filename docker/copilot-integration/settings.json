@@ -1,0 +1,120 @@
+{
+  "// Aider Configuration": "",
+  "aider.apiEndpoint": "http://localhost:5000",
+  "aider.modelName": "claude-3-7-sonnet-20250219",
+  "aider.autoCommit": true,
+  "aider.showDiffs": true,
+  "aider.previewUrl": "http://localhost:3000",
+  "aider.enableInspector": true,
+  "aider.autoOpenPreview": false,
+
+  "// AI Provider Configuration": "",
+  "aider.aiProvider.default": "copilot",
+  "aider.aiProvider.autoSelect": true,
+  
+  "// Ollama Settings (optional alternative)": "",
+  "aider.aiProvider.ollama.enabled": false,
+  "aider.aiProvider.ollama.endpoint": "http://localhost:11434",
+  "aider.aiProvider.ollama.model": "codellama",
+  
+  "// GitHub Copilot Settings": "",
+  "aider.aiProvider.copilot.enabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": true,
+    "markdown": true,
+    "javascript": true,
+    "typescript": true,
+    "python": true,
+    "go": true,
+    "rust": true,
+    "java": true,
+    "c": true,
+    "cpp": true,
+    "csharp": true,
+    "php": true,
+    "ruby": true,
+    "swift": true,
+    "kotlin": true,
+    "scala": true,
+    "r": true,
+    "shell": true,
+    "powershell": true,
+    "dockerfile": true,
+    "sql": true,
+    "html": true,
+    "css": true,
+    "scss": true,
+    "less": true,
+    "json": true,
+    "xml": true
+  },
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "copilot-codex",
+    "debug.testOverrideProxyUrl": "http://localhost:5000",
+    "debug.overrideProxyUrl": "http://localhost:5000",
+    "length": 500,
+    "temperature": "",
+    "top_p": 1,
+    "stops": {
+      "*": ["\n\n\n"]
+    },
+    "indentationMode": {
+      "*": true,
+      "python": false,
+      "markdown": false
+    },
+    "inlineSuggestCount": 3
+  },
+
+  "// Screenshot & Context Settings": "",
+  "aider.screenshot.enabled": true,
+  "aider.screenshot.defaultProvider": "copilot",
+  "aider.screenshot.autoSelectVisionModel": true,
+  "aider.projectContext.enabled": true,
+  "aider.projectContext.autoUpdate": true,
+
+  "// GitHub Integration Settings": "",
+  "aider.github.autoAuth": true,
+
+  "// Editor Settings for Optimal Experience": "",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": true,
+  "editor.suggestSelection": "first",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.inlineSuggest.enabled": true,
+
+  "// Terminal Settings": "",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.cursorStyle": "line",
+
+  "// Files Settings": "",
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  "// Git Settings": "",
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+
+  "// Workspace Trust": "",
+  "security.workspace.trust.enabled": false,
+
+  "// Extension-specific Settings": "",
+  "extensions.ignoreRecommendations": false,
+  "extensions.autoUpdate": true
+}
