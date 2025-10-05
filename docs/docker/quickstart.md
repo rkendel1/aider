@@ -2,6 +2,14 @@
 
 Get up and running with Aider + Code-Server + Supabase in 5 minutes!
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [5-Minute Setup](#5-minute-setup)
+- [Next Steps](#next-steps)
+- [Quick Commands](#quick-commands)
+- [Troubleshooting](#troubleshooting)
+
 ## Prerequisites
 
 - **Docker**: Docker Desktop or Docker Engine 20.10+

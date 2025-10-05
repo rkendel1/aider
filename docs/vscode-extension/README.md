@@ -33,13 +33,9 @@ The Aider VS Code extension enables seamless interaction with the Aider AI pair 
 ### Setup & Installation
 - **[Installation Guide](setup/installation.md)** - Detailed installation instructions
 - **[Quick Start (5 min)](setup/quickstart.md)** - Get running quickly
-- **[Configuration](setup/configuration.md)** - Configuration options and settings
 
 ### Usage Guides
 - **[Getting Started](usage/getting-started.md)** - Basic usage guide
-- **[Chat Interface](usage/chat-interface.md)** - Using the chat effectively
-- **[File Management](usage/file-management.md)** - Managing files in context
-- **[Common Workflows](usage/workflows.md)** - Typical usage patterns
 
 ### Features
 - **[AI Providers](features/ai-providers.md)** - Multi-provider AI support
@@ -48,14 +44,9 @@ The Aider VS Code extension enables seamless interaction with the Aider AI pair 
 - **[GitHub Integration](features/github-integration.md)** - Git and GitHub features
 - **[Project Context](features/project-context.md)** - Project-level context storage
 
-### Development
-- **[Architecture](development/architecture.md)** - Extension architecture
-- **[Contributing](development/contributing.md)** - Development guide
-- **[Changelog](development/changelog.md)** - Version history
-
 ### Examples
-- **[Examples Directory](../../../vscode-extension/examples/)** - Code examples and demos
-- **[Testing Guide](../../../vscode-extension/examples/TESTING_GUIDE.md)** - Testing procedures
+- **[Examples Directory](../../vscode-extension/examples/)** - Code examples and demos
+- **[Testing Guide](../../vscode-extension/examples/TESTING_GUIDE.md)** - Testing procedures
 
 ## Documentation Structure
 
@@ -64,23 +55,15 @@ docs/vscode-extension/
 ├── README.md                       # This file - overview and navigation
 ├── setup/
 │   ├── installation.md            # Installation guide
-│   ├── quickstart.md              # 5-minute quick start
-│   └── configuration.md           # Configuration options
+│   └── quickstart.md              # 5-minute quick start
 ├── usage/
-│   ├── getting-started.md         # Basic usage guide
-│   ├── chat-interface.md          # Using the chat
-│   ├── file-management.md         # Managing files
-│   └── workflows.md               # Common workflows
-├── features/
-│   ├── ai-providers.md            # Multi-provider AI
-│   ├── live-preview.md            # Live preview feature
-│   ├── vision-models.md           # Screenshot-to-code
-│   ├── github-integration.md      # GitHub features
-│   └── project-context.md         # Project context
-└── development/
-    ├── architecture.md            # Extension architecture
-    ├── contributing.md            # Development guide
-    └── changelog.md               # Version history
+│   └── getting-started.md         # Basic usage guide
+└── features/
+    ├── ai-providers.md            # Multi-provider AI
+    ├── live-preview.md            # Live preview feature
+    ├── vision-models.md           # Screenshot-to-code
+    ├── github-integration.md      # GitHub features
+    └── project-context.md         # Project context
 ```
 
 ## Getting Started
@@ -93,9 +76,7 @@ docs/vscode-extension/
 
 ### For Developers
 
-1. **[Clone and build](development/contributing.md)** - Set up development environment
-2. **[Review architecture](development/architecture.md)** - Understand the design
-3. **[Make changes](development/contributing.md)** - Contribute improvements
+See the main repository [Contributing Guide](../../CONTRIBUTING.md) for development setup and guidelines.
 
 ## Features
 
@@ -152,7 +133,7 @@ Learn more: [GitHub Integration Guide](features/github-integration.md)
 - Code change previews
 - Undo support
 
-Learn more: [Chat Interface Guide](usage/chat-interface.md)
+Learn more: [Getting Started Guide](usage/getting-started.md)
 
 ### File Management
 - Add/remove files from chat context
@@ -160,7 +141,7 @@ Learn more: [Chat Interface Guide](usage/chat-interface.md)
 - Diff viewing
 - Easy revert with one click
 
-Learn more: [File Management Guide](usage/file-management.md)
+Learn more: [Getting Started Guide](usage/getting-started.md)
 
 ## Requirements
 
@@ -195,11 +176,13 @@ Learn more: [File Management Guide](usage/file-management.md)
 
 ## Contributing
 
-We welcome contributions! See the [Contributing Guide](development/contributing.md) for:
+We welcome contributions! See the [Contributing Guide](../../CONTRIBUTING.md) for:
 - Development setup
 - Code standards
 - Testing procedures
 - Pull request process
+
+Also see the [VS Code Extension Documentation](../../vscode-extension/README.md) in the main repository.
 
 ## License
 
@@ -208,6 +191,6 @@ Apache-2.0 (same as Aider main project)
 ---
 
 **Quick Navigation:**
-[Setup](setup/) | [Usage](usage/) | [Features](features/) | [Development](development/) | [Examples](../../../vscode-extension/examples/)
+[Setup](setup/) | [Usage](usage/) | [Features](features/) | [Examples](../../vscode-extension/examples/)
 
 *For the main Aider documentation, visit [aider.chat/docs](https://aider.chat/docs)*

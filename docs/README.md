@@ -10,18 +10,13 @@ Complete documentation for the Aider VS Code extension, including installation, 
 - **[Setup](vscode-extension/setup/)** - Installation and configuration guides
 - **[Usage](vscode-extension/usage/)** - User guides and tutorials
 - **[Features](vscode-extension/features/)** - Detailed feature documentation
-- **[Development](vscode-extension/development/)** - Architecture and contribution guides
 
 ### [Docker Setup](docker/README.md)
 Docker-based development environment with Code-Server, Aider, and Supabase.
 
 - Quick start guides
 - Configuration and setup
-- Troubleshooting and optimization
 - Example integrations
-
-### [API Documentation](api/README.md)
-REST API documentation for integrating Aider into your applications.
 
 ## 🚀 Quick Links
 
@@ -34,11 +29,10 @@ REST API documentation for integrating Aider into your applications.
 - [Installing the VS Code Extension](vscode-extension/setup/installation.md)
 - [Using AI Providers](vscode-extension/features/ai-providers.md)
 - [Live Preview Feature](vscode-extension/features/live-preview.md)
-- [Docker Troubleshooting](docker/troubleshooting.md)
+- [Docker Setup](docker/README.md)
 
 ### Contributing
 - [Contributing Guidelines](../CONTRIBUTING.md)
-- [VS Code Extension Development](vscode-extension/development/contributing.md)
 
 ## 📖 Additional Resources
 
@@ -52,22 +46,23 @@ REST API documentation for integrating Aider into your applications.
 ```
 docs/
 ├── README.md                           # This file - master documentation index
+├── CONSOLIDATION_SUMMARY.md            # Documentation consolidation summary
 ├── vscode-extension/
 │   ├── README.md                       # VS Code extension overview
 │   ├── setup/                          # Installation and configuration
+│   │   ├── quickstart.md               # 5-minute quick start
+│   │   └── installation.md             # Full installation guide
 │   ├── usage/                          # User guides and workflows
-│   ├── features/                       # Feature-specific documentation
-│   ├── development/                    # Architecture and development
-│   └── examples/                       # Code examples and demos
-├── docker/
-│   ├── README.md                       # Docker setup overview
-│   ├── quickstart.md                   # Quick start guide
-│   ├── setup.md                        # Detailed setup guide
-│   ├── troubleshooting.md              # Common issues and solutions
-│   ├── examples.md                     # Integration examples
-│   └── optimizations.md                # Performance and optimization
-└── api/
-    └── README.md                       # API reference
+│   │   └── getting-started.md          # Getting started tutorial
+│   └── features/                       # Feature-specific documentation
+│       ├── ai-providers.md             # Multi-AI provider support
+│       ├── live-preview.md             # Live preview with inspector
+│       ├── vision-models.md            # Screenshot-to-code
+│       ├── github-integration.md       # Git/GitHub features
+│       └── project-context.md          # Project-level context
+└── docker/
+    ├── README.md                       # Docker setup overview
+    └── quickstart.md                   # Quick start guide
 
 ```
 

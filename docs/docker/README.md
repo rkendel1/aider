@@ -35,10 +35,9 @@ This Docker setup provides a complete development environment combining:
 ### Documentation Files
 
 - **[Quick Start Guide](quickstart.md)** - Get running in 5 minutes
-- **[Full Setup Guide](setup.md)** - Comprehensive installation and configuration
-- **[Troubleshooting Guide](troubleshooting.md)** - Common issues and solutions
-- **[Examples & Integrations](examples.md)** - Real-world usage examples
-- **[Optimizations](optimizations.md)** - Performance improvements and best practices
+
+For more detailed information, visit:
+- **[Main Docker Directory](../../docker/)** - Source files and configuration
 
 ### Tools & Templates
 
@@ -139,22 +138,20 @@ make rebuild
 
 ### 5. Next Steps
 
-- **[Read the full setup guide](setup.md)** - Detailed configuration
-- **[Try the examples](examples.md)** - See what you can build
-- **[Explore optimizations](optimizations.md)** - Improve performance
+- **[Explore VS Code Extension features](../vscode-extension/README.md)** - Learn about the extension
+- **[Review main documentation](../README.md)** - Complete documentation hub
+- **[Check Docker files](../../docker/)** - Source configuration and scripts
 
 ## Documentation
 
 ### For New Users
 
 1. **[Quick Start](quickstart.md)** - 5-minute setup guide
-2. **[Setup Guide](setup.md)** - Detailed installation and configuration
-3. **[Examples](examples.md)** - Learn by example
+2. **[Main Docs](../README.md)** - Complete documentation hub
 
 ### For Existing Users
 
-- **[Troubleshooting](troubleshooting.md)** - Solve common problems
-- **[Optimizations](optimizations.md)** - Improve performance and reduce costs
+- **[VS Code Extension](../vscode-extension/README.md)** - Extension documentation
 - **[SaaS Template](../../docker/templates/saas-starter/README.md)** - Production starter
 
 ### For Developers
@@ -279,9 +276,8 @@ AIDER_CACHE_PROMPTS=true       # Enable caching
 ### Documentation
 
 - [Quick Start Guide](quickstart.md)
-- [Setup Guide](setup.md)
-- [Troubleshooting](troubleshooting.md)
-- [Examples](examples.md)
+- [Main Documentation Hub](../README.md)
+- [VS Code Extension Docs](../vscode-extension/README.md)
 
 ### External Resources
 
@@ -298,15 +294,15 @@ AIDER_CACHE_PROMPTS=true       # Enable caching
 
 ## Contributing
 
-Contributions welcome! See [Contributing Guide](../CONTRIBUTING.md).
+Contributions welcome! See [Contributing Guide](../../CONTRIBUTING.md).
 
 ## License
 
-This Docker setup is part of the Aider project. See [LICENSE](../LICENSE.txt).
+This Docker setup is part of the Aider project. See [LICENSE](../../LICENSE.txt).
 
 ---
 
 **Quick Navigation:**  
-[Quick Start](quickstart.md) | [Setup Guide](setup.md) | [Examples](examples.md) | [Troubleshooting](troubleshooting.md) | [Optimizations](optimizations.md)
+[Quick Start](quickstart.md) | [Main Docs](../README.md) | [VS Code Extension](../vscode-extension/README.md)
 
 *Ready to start? Head to the [Quick Start Guide](quickstart.md)!*

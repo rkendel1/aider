@@ -2,6 +2,14 @@
 
 Get the Aider VS Code extension up and running in 5 minutes.
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Next Steps](#next-steps)
+- [Troubleshooting](#troubleshooting)
+
 ## Prerequisites
 
 - **VS Code**: 1.85.0 or higher
