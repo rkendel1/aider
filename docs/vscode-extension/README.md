@@ -33,13 +33,9 @@ The Aider VS Code extension enables seamless interaction with the Aider AI pair 
 ### Setup & Installation
 - **[Installation Guide](setup/installation.md)** - Detailed installation instructions
 - **[Quick Start (5 min)](setup/quickstart.md)** - Get running quickly
-- **[Configuration](setup/configuration.md)** - Configuration options and settings
 
 ### Usage Guides
 - **[Getting Started](usage/getting-started.md)** - Basic usage guide
-- **[Chat Interface](usage/chat-interface.md)** - Using the chat effectively
-- **[File Management](usage/file-management.md)** - Managing files in context
-- **[Common Workflows](usage/workflows.md)** - Typical usage patterns
 
 ### Features
 - **[AI Providers](features/ai-providers.md)** - Multi-provider AI support
@@ -47,11 +43,6 @@ The Aider VS Code extension enables seamless interaction with the Aider AI pair 
 - **[Vision Models](features/vision-models.md)** - Screenshot-to-code generation
 - **[GitHub Integration](features/github-integration.md)** - Git and GitHub features
 - **[Project Context](features/project-context.md)** - Project-level context storage
-
-### Development
-- **[Architecture](development/architecture.md)** - Extension architecture
-- **[Contributing](development/contributing.md)** - Development guide
-- **[Changelog](development/changelog.md)** - Version history
 
 ### Examples
 - **[Examples Directory](../../../vscode-extension/examples/)** - Code examples and demos
@@ -152,7 +143,7 @@ Learn more: [GitHub Integration Guide](features/github-integration.md)
 - Code change previews
 - Undo support
 
-Learn more: [Chat Interface Guide](usage/chat-interface.md)
+Learn more: [Getting Started Guide](usage/getting-started.md)
 
 ### File Management
 - Add/remove files from chat context
@@ -160,7 +151,7 @@ Learn more: [Chat Interface Guide](usage/chat-interface.md)
 - Diff viewing
 - Easy revert with one click
 
-Learn more: [File Management Guide](usage/file-management.md)
+Learn more: [Getting Started Guide](usage/getting-started.md)
 
 ## Requirements
 
