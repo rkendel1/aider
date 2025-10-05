@@ -1,0 +1,103 @@
+FROM python:3.10-slim-bookworm AS base
+
+# Install system dependencies including Node.js, npm, curl, git, GitHub CLI, and Supabase CLI
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        build-essential \
+        git \
+        libportaudio2 \
+        pandoc \
+        curl \
+        wget \
+        ca-certificates \
+        supervisor \
+        dumb-init \
+        locales \
+        gnupg \
+    && sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
+    && locale-gen \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && useradd -m -u 1000 -s /bin/bash coder \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=en_US.UTF-8
+
+# Install code-server
+ARG CODE_SERVER_VERSION=4.20.0
+RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --version=${CODE_SERVER_VERSION}
+
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Supabase CLI
+RUN curl -fsSL https://supabase.com/cli/install.sh | sh
+
+WORKDIR /workspace
+
+# Setup venv, directories, and permissions
+RUN python -m venv /venv && \
+    mkdir -p /home/coder/.aider/cache /home/coder/.cache \
+             /home/coder/pw-browsers /home/coder/.config \
+             /home/coder/.local /home/coder/.ollama \
+             /workspace \
+    && chown -R coder:coder /home/coder /workspace /venv \
+    && chmod -R 777 /home/coder/.aider /home/coder/.cache /home/coder/pw-browsers /home/coder/.ollama \
+    && git config --system --add safe.directory /workspace
+
+# Environment variables
+ENV PATH="/venv/bin:$PATH" \
+    PLAYWRIGHT_BROWSERS_PATH=/home/coder/pw-browsers \
+    PLAYWRIGHT_SKIP_BROWSER_GC=1 \
+    HOME=/home/coder \
+    OLLAMA_HOST=0.0.0.0:11434 \
+    OLLAMA_MODELS=/home/coder/.ollama/models \
+    OLLAMA_VISION_MODEL=llama3.2-vision
+
+#########################
+FROM base AS code-server-aider
+
+ENV AIDER_DOCKER_IMAGE=code-server-aider
+
+# Copy Aider source code into the container  
+COPY --chown=coder:coder . /workspace/aider
+
+# Copy configuration files
+COPY --chown=coder:coder docker/copilot-integration/start.sh /usr/local/bin/start.sh
+COPY --chown=coder:coder docker/copilot-integration/settings.json /tmp/settings.json
+COPY --chown=coder:coder docker/copilot-integration/extension-hooks/integration-config.json /tmp/integration-config.json
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Install Python dependencies
+RUN /venv/bin/python -m pip install --upgrade --no-cache-dir pip && \
+    /venv/bin/python -m pip install --no-cache-dir \
+        /workspace/aider[help,browser,playwright] \
+        boto3 flask flask-cors \
+        --extra-index-url https://download.pytorch.org/whl/cpu && \
+    /venv/bin/python -m playwright install --with-deps chromium && \
+    find /venv/lib/python3.10/site-packages \( -type d -exec chmod a+rwx {} + \) -o \( -type f -exec chmod a+rw {} + \) && \
+    chmod +x /usr/local/bin/start.sh
+
+USER coder
+
+# Configure code-server
+RUN mkdir -p /home/coder/.config/code-server /home/coder/.local/share/code-server/extensions && \
+    printf "bind-addr: 0.0.0.0:8080\nauth: password\ncert: false\n" > /home/coder/.config/code-server/config.yaml
+
+# Pre-install GitHub Copilot extension (will be downloaded on first start if not available)
+# The extension will be installed at runtime via the start.sh script
+
+# Copy workspace settings and integration config
+RUN mkdir -p /workspace/.vscode /home/coder/.config/copilot-aider && \
+    cp /tmp/settings.json /workspace/.vscode/settings.json && \
+    cp /tmp/integration-config.json /home/coder/.config/copilot-aider/integration.json && \
+    chown -R coder:coder /workspace/.vscode /home/coder/.config/copilot-aider
+
+EXPOSE 8080 5000 11434
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["/usr/local/bin/start.sh"]
